@@ -118,11 +118,11 @@ const uploadFile = async (file) => {
 <style scoped>
 .upload-container {
   @apply rounded-lg p-8 flex items-center justify-center text-center cursor-pointer transition-colors;
-  // removed border-2 border-dashed border-neutral-gray
+  /* removed border-2 border-dashed border-neutral-gray */
 }
 
 .drag-active {
-  // removed border and bg highlight
+  /* removed border and bg highlight */
 }
 
 .upload-content {
