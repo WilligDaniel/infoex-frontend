@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== BASE STYLES ===== */
+@layer base {
+  html {
+    font-family: 'Frutiger Std', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply m-0 p-0 min-h-screen bg-white;
+  }
+
+  h1 {
+    @apply text-3xl font-normal;
+  }
+
+  h2 {
+    @apply text-2xl font-normal;
+  }
+
+  h3 {
+    @apply text-xl font-normal;
+  }
+  
+  /* Global box-sizing reset */
+  *, *::before, *::after {
+    @apply box-border m-0 p-0;
+  }
+  
+  /* Root styles */
+  :root {
+    @apply text-[#213547] bg-white;
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Base link styles */
+  a {
+    @apply font-medium text-[#646cff] no-underline;
+  }
+  
+  a:hover {
+    @apply text-[#535bf2];
+  }
+}
+
+/* ===== COMPONENT STYLES ===== */
+@layer components {
+  /* --- Button System --- */
+  /* Base button style */
+  .btn {
+    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full text-sm font-normal transition-colors;
+  }
+  
+  .btn:hover {
+    @apply border-primary-dark text-primary-dark;
+  }
+  
+  /* Button variants */
+  .btn-primary {
+    @apply bg-primary text-white border-primary;
+  }
+  
+  .btn-primary:hover {
+    @apply bg-primary-dark border-primary-dark;
+  }
+  
+  /* Apply the same styling to bare buttons */
+  button {
+    @apply btn;
+  }
+  
+  button:focus, button:focus-visible {
+    /* Removed focus outline for no highlight
+    @apply outline outline-4 outline-[#4f46e5];
+    */
+  }
+  
+  /* Icon button without borders or backgrounds */
+  .btn-icon {
+    @apply bg-transparent border-0 p-0 shadow-none outline-none focus:outline-none hover:bg-transparent;
+  }
+  
+  /* --- Login Page --- */
+  .login-page {
+    @apply min-h-screen bg-white;
+  }
+  
+  .login-logo {
+    @apply h-32 w-auto;
+  }
+  
+  .login-input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded bg-white text-black;
+  }
+  
+  .login-button {
+    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full hover:border-primary-dark hover:text-primary-dark transition-colors text-sm font-normal;
+  }
+  
+  .forgot-password {
+    @apply text-primary text-sm hover:underline;
+  }
+  
+  /* --- Tabs --- */
+  .tab {
+    @apply flex flex-col gap-2.5 cursor-pointer;
+  }
+  
+  .tab-active {
+    @apply text-primary;
+  }
+  
+  .tab-inactive {
+    @apply text-neutral-darkgray;
+  }
+  
+  /* --- Tables --- */
+  .data-table {
+    @apply w-full;
+  }
+  
+  .data-table th {
+    @apply py-2 text-left font-normal;
+  }
+  
+  .table-header {
+    @apply text-left font-medium text-gray-600 text-sm px-3;
+    /* Removed py-3 as we're applying it directly in the markup */
+  }
+
+  .table-cell {
+    @apply whitespace-nowrap text-sm text-gray-900 px-3;
+    /* Removed py-3 as we're applying it directly in the markup */
+  }
+
+  .data-table td {
+    @apply py-2 border-b border-gray-400;
+  }
+  
+  .data-table tr:last-child td {
+    @apply border-b-0;
+  }
+  
+  .data-table-row,
+  .data-table-row-alt,
+  .data-table-row-highlight,
+  .data-table-row-error,
+  .data-table-row-warning {
+    @apply bg-[#F4F4F4] text-black;
+  }
+  
+  /* --- Card --- */
+  .card {
+    @apply bg-white p-4 rounded shadow;
+  }
+  
+  /* --- App Layout --- */
+  #app {
+    @apply text-center;
+  }
+}
