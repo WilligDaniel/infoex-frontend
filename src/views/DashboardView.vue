@@ -2,11 +2,13 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBilanzenStore } from '@/stores/bilanzen.js';
+import { useDocumentStore } from '@/stores/document.js';
 import { storeToRefs } from 'pinia';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
 
 const router = useRouter();
 const bilanzenStore = useBilanzenStore();
+const documentStore = useDocumentStore();
 const { isLoading, error } = storeToRefs(bilanzenStore);
 const bilanzen = ref([]);
 
@@ -15,6 +17,9 @@ const activeTab = ref('all');
 const uploadedFile = ref('');
 const fileProcessed = ref(false);
 const isProcessing = ref(false);
+const showIdentifierDialog = ref(false);
+const identifierNumber = ref('');
+const identifierError = ref('');
 
 // Computed properties for filtered documents
 const filteredBilanzen = computed(() => {
@@ -86,31 +91,55 @@ const removeFile = () => {
   fileProcessed.value = false;
 };
 
+const validateIdentifier = (value) => {
+  // Check if at least one number is entered
+  return /\d+/.test(value);
+};
+
 const processFile = () => {
   isProcessing.value = true;
+  showIdentifierDialog.value = true;
+};
+
+const handleIdentifierSubmit = () => {
+  if (!identifierNumber.value) {
+    identifierError.value = 'Bitte geben Sie eine Nummer ein';
+    return;
+  }
+
+  // Close dialog and update state
+  showIdentifierDialog.value = false;
   fileProcessed.value = true;
-  console.log('Processing file...');
   
-  // Simuliere eine neue Bilanz
-  const newBilanz = {
-    id: 1,
-    name: uploadedFile.value,
+  // Create new entry
+  const entry = {
+    id: identifierNumber.value,
+    name: `Waldeck_PDF2.pdf`,
     company: 'Waldeck GmbH',
     documentType: 'Bilanz',
     date: new Date().toLocaleDateString('de-DE'),
     status: 'Verarbeitet',
-    type: uploadedFile.value.toLowerCase().endsWith('.pdf') ? 'pdf' : 'xls'
+    type: 'pdf'
   };
   
-  // Füge die neue Bilanz zum Store hinzu
-  bilanzen.value.unshift(newBilanz);
+  // Add to bilanzen array
+  bilanzen.value = [entry, ...bilanzen.value];
   
-  // Nach kurzer Verzögerung zur Bilanzansicht navigieren
+  // Process the file (show loading animation)
+  isProcessing.value = true;
+  
+  // Navigate after a delay
   setTimeout(() => {
-    console.log('Navigation to bilanz/1');
     isProcessing.value = false;
-    router.push('/bilanz/1');
+    router.push(`/bilanz/${entry.id}`);
   }, 1500);
+};
+
+const closeIdentifierDialog = () => {
+  showIdentifierDialog.value = false;
+  isProcessing.value = false;
+  identifierNumber.value = '';
+  identifierError.value = '';
 };
 
 onMounted(() => {
@@ -331,6 +360,54 @@ onMounted(() => {
           </svg>
           Entwicklungs-Testserver
         </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Identifier Input Dialog -->
+  <div v-if="showIdentifierDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96">
+      <h3 class="text-lg font-semibold mb-4">Identifikationsnummer eingeben</h3>
+      <div class="mb-4">
+        <input
+          type="text"
+          v-model="identifierNumber"
+          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Personalnummer eingeben"
+          maxlength="10"
+          @keyup.enter="handleIdentifierSubmit"
+        />
+        <p class="text-sm text-gray-600 mt-1">
+          Bitte geben Sie eine Personalnummer ein.
+        </p>
+        <p v-if="identifierError" class="text-red-500 text-sm mt-1">{{ identifierError }}</p>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button
+          @click="closeIdentifierDialog"
+          class="px-4 py-2 text-gray-600 hover:text-gray-800"
+        >
+          Abbrechen
+        </button>
+        <button
+          @click="handleIdentifierSubmit"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+          :disabled="!identifierNumber || !validateIdentifier(identifierNumber)"
+        >
+          Bestätigen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="isProcessing" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+    <div class="bg-white rounded-lg p-6 w-96">
+      <h3 class="text-lg font-semibold mb-4">Bilanz wird verarbeitet...</h3>
+      <div class="flex justify-center">
+        <svg class="animate-spin -ml-1 mr-2 h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
       </div>
     </div>
   </div>
