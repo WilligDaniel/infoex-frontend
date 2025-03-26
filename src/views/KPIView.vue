@@ -14,7 +14,23 @@
 
   <div class="min-h-screen bg-gray-50 py-8" :class="{ 'opacity-0': isLoading }">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
-      <h2 class="text-2xl font-medium mb-6">KPI-Auswertung</h2>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-medium">KPI-Auswertung</h2>
+        
+        <!-- Branchen Dropdown -->
+        <div class="w-48">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Branche</label>
+          <select 
+            v-model="selectedBranch"
+            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="landwirtschaft">Landwirtschaft</option>
+            <option value="gastronomie">Gastronomie</option>
+            <option value="retail">Retail</option>
+            <option value="sonstige">Sonstige</option>
+          </select>
+        </div>
+      </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- KPI Cards -->
@@ -64,19 +80,37 @@
         </div>
       </div>
       
-      <div class="flex justify-end mt-6 space-x-3">
-        <button 
-          @click="$router.push('/dashboard')"
-          class="px-4 py-2 border rounded-lg hover:bg-gray-50"
-        >
-          Zurück zum Dashboard
-        </button>
-        <button 
-          @click="navigateToCompletion"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
-        >
-          Weiter zur Abschließung
-        </button>
+      <!-- Action Buttons -->
+      <div class="flex justify-between mt-6 space-x-3">
+        <div class="space-x-3">
+          <button 
+            class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            @click="generateConsultingOverview"
+          >
+            Beratungsübersicht erzeugen
+          </button>
+          <button 
+            class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            @click="downloadDMS"
+          >
+            DMS Download
+          </button>
+        </div>
+        
+        <div class="space-x-3">
+          <button 
+            @click="$router.push('/dashboard')"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            Zurück zum Dashboard
+          </button>
+          <button 
+            @click="navigateToCompletion"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
+          >
+            Weiter zur Abschließung
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -176,4 +210,18 @@ const kpis = ref([
     showInfo: false
   }
 ]);
+
+// Add new ref for branch selection
+const selectedBranch = ref('sonstige');
+
+// Mock functions for new buttons
+const generateConsultingOverview = () => {
+  console.log('Generating consulting overview...');
+  // Mock implementation
+};
+
+const downloadDMS = () => {
+  console.log('Downloading DMS...');
+  // Mock implementation
+};
 </script> 
