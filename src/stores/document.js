@@ -22,7 +22,7 @@ export const useDocumentStore = defineStore('document', {
         companyId: 'WD-1',
         documentType: 'Jahresabschluss',
         documentMethod: 'Automatisch extrahiert',
-        date: '26.03.2024',
+        date: '26.03.2025',
         totalAssets: 481331.29,
         totalLiabilities: 481331.29,
         currency: 'EUR',

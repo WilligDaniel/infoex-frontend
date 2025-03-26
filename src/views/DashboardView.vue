@@ -20,7 +20,9 @@ const uploadedFile = ref('');
 const fileProcessed = ref(false);
 const isProcessing = ref(false);
 const showIdentifierDialog = ref(false);
-const identifierNumber = ref('');
+const isPersonalNumber = ref(true);
+const personalNumber = ref('');
+const unitNumber = ref('');
 const identifierError = ref('');
 
 // Computed properties for filtered documents
@@ -104,7 +106,9 @@ const processFile = () => {
 };
 
 const handleIdentifierSubmit = () => {
-  if (!identifierNumber.value) {
+  const number = isPersonalNumber.value ? personalNumber.value : unitNumber.value;
+  
+  if (!number) {
     identifierError.value = 'Bitte geben Sie eine Nummer ein';
     return;
   }
@@ -115,7 +119,7 @@ const handleIdentifierSubmit = () => {
   
   // Create new entry
   const entry = {
-    id: identifierNumber.value,
+    id: number, // Use the entered number as ID
     name: `Waldeck_PDF2.pdf`,
     company: 'Waldeck GmbH',
     documentType: 'Bilanz',
@@ -156,9 +160,21 @@ const addXLSFile = (personalNumber) => {
 const closeIdentifierDialog = () => {
   showIdentifierDialog.value = false;
   isProcessing.value = false;
-  identifierNumber.value = '';
+  personalNumber.value = '';
+  unitNumber.value = '';
   identifierError.value = '';
 };
+
+const activeNumber = computed({
+  get: () => isPersonalNumber.value ? personalNumber.value : unitNumber.value,
+  set: (value) => {
+    if (isPersonalNumber.value) {
+      personalNumber.value = value;
+    } else {
+      unitNumber.value = value;
+    }
+  }
+});
 
 onMounted(() => {
   // No need to initialize mock data anymore as we're using the store
@@ -362,20 +378,65 @@ onMounted(() => {
   <div v-if="showIdentifierDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 w-96">
       <h3 class="text-lg font-semibold mb-4">Identifikationsnummer eingeben</h3>
+      
       <div class="mb-4">
-        <input
-          type="text"
-          v-model="identifierNumber"
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Personalnummer eingeben"
-          maxlength="10"
-          @keyup.enter="handleIdentifierSubmit"
-        />
+        <div class="flex space-x-4 mb-2">
+          <button 
+            @click="isPersonalNumber = true"
+            :class="[
+              'px-4 py-2 rounded-lg',
+              isPersonalNumber ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+            ]"
+          >
+            Personennummer
+          </button>
+          <button 
+            @click="isPersonalNumber = false"
+            :class="[
+              'px-4 py-2 rounded-lg',
+              !isPersonalNumber ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+            ]"
+          >
+            Einheitennummer
+          </button>
+        </div>
+        
+        <!-- Personennummer Input -->
+        <div v-if="isPersonalNumber">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Personennummer
+          </label>
+          <input 
+            type="text" 
+            v-model="activeNumber"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :placeholder="isPersonalNumber ? 'Personennummer eingeben' : 'Einheitennummer eingeben'"
+            maxlength="10"
+            @keyup.enter="handleIdentifierSubmit"
+          />
+        </div>
+        
+        <!-- Einheitennummer Input -->
+        <div v-else>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Einheitennummer
+          </label>
+          <input 
+            type="text" 
+            v-model="activeNumber"
+            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :placeholder="isPersonalNumber ? 'Personennummer eingeben' : 'Einheitennummer eingeben'"
+            maxlength="10"
+            @keyup.enter="handleIdentifierSubmit"
+          />
+        </div>
+        
         <p class="text-sm text-gray-600 mt-1">
-          Bitte geben Sie eine Personalnummer ein.
+          Bitte geben Sie eine {{ isPersonalNumber ? 'Personennummer' : 'Einheitennummer' }} ein.
         </p>
         <p v-if="identifierError" class="text-red-500 text-sm mt-1">{{ identifierError }}</p>
       </div>
+      
       <div class="flex justify-end space-x-2">
         <button
           @click="closeIdentifierDialog"
@@ -386,7 +447,7 @@ onMounted(() => {
         <button
           @click="handleIdentifierSubmit"
           class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-          :disabled="!identifierNumber || !validateIdentifier(identifierNumber)"
+          :disabled="!(isPersonalNumber ? personalNumber : unitNumber)"
         >
           Bestätigen
         </button>

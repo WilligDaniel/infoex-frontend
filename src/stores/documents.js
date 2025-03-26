@@ -6,35 +6,35 @@ export const useBilanzenStore = defineStore('bilanzen', () => {
     {
       id: '1',
       name: 'Rechnung_2023-01-15.pdf',
-      date: '15.01.2023',
+      date: '26.03.2025',
       type: 'Rechnung',
       status: 'processed'
     },
     {
       id: '2',
       name: 'Vertrag_2023-02-20.pdf',
-      date: '20.02.2023',
+      date: '26.03.2025',
       type: 'Vertrag',
       status: 'processed'
     },
     {
       id: '3',
       name: 'Angebot_2023-03-10.pdf',
-      date: '10.03.2023',
+      date: '26.03.2025',
       type: 'Angebot',
       status: 'processed'
     },
     {
       id: '4',
       name: 'Rechnung_2023-04-05.pdf',
-      date: '05.04.2023',
+      date: '26.03.2025',
       type: 'Rechnung',
       status: 'processed'
     },
     {
       id: '5',
       name: 'Bilanz_2023.pdf',
-      date: '31.12.2023',
+      date: '26.03.2025',
       type: 'Bilanz',
       status: 'error'
     }
@@ -119,9 +119,9 @@ export const useDocumentsStore = defineStore('documents', {
         // Simuliere einen API-Aufruf mit Beispieldaten
         await new Promise(resolve => setTimeout(resolve, 500));
         this.documents = [
-          { id: 1, name: 'Bilanz 2022.pdf', date: '2023-01-15', status: 'processed' },
-          { id: 2, name: 'Bilanz 2021.pdf', date: '2022-01-20', status: 'processed' },
-          { id: 3, name: 'Bilanz 2020.pdf', date: '2021-01-18', status: 'processed' }
+          { id: 1, name: 'Bilanz 2022.pdf', date: '26.03.2025', status: 'processed' },
+          { id: 2, name: 'Bilanz 2021.pdf', date: '26.03.2025', status: 'processed' },
+          { id: 3, name: 'Bilanz 2020.pdf', date: '26.03.2025', status: 'processed' }
         ];
         this.error = null;
       } catch (err) {
