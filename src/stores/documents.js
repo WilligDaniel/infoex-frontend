@@ -43,7 +43,7 @@ export const useBilanzenStore = defineStore('bilanzen', () => {
   const isLoading = ref(false);
   const error = ref(null);
 
-  // Computed properties for filtered documents
+  // Computed properties für filtered documents
   const processedBilanzen = computed(() => {
     return bilanzen.value.filter(doc => doc.status === 'processed');
   });
@@ -57,9 +57,6 @@ export const useBilanzenStore = defineStore('bilanzen', () => {
     error.value = null;
 
     try {
-      // In a real app, this would be an API call
-      // For now, we're just using the mock data
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
     } catch (err) {
       error.value = 'Failed to fetch documents';
@@ -74,8 +71,6 @@ export const useBilanzenStore = defineStore('bilanzen', () => {
     error.value = null;
 
     try {
-      // In a real app, this would be an API call to upload the file
-      // For now, we're just adding a mock entry
       const newDocument = {
         id: String(bilanzen.value.length + 1),
         name: file.name,

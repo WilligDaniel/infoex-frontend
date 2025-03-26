@@ -19,9 +19,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       
       try {
-        // Check against hardcoded credentials
         if (username === '1' && password === '1') {
-          // Simulate API delay
           await new Promise(resolve => setTimeout(resolve, 500));
           
           this.user = {
@@ -45,7 +43,6 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       
       try {
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
         this.user = null;

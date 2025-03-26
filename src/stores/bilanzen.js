@@ -181,7 +181,7 @@ export const useBilanzenStore = defineStore('bilanzen', {
       this.error = null;
       
       try {
-        // In einer echten Anwendung würde hier ein API-Aufruf stattfinden
+        // ohne Mock würde hier ein API-Aufruf stattfinden
         // Hier setzen wir einfach Mock-Daten
         this.bilanzen = [
           {
@@ -219,7 +219,7 @@ export const useBilanzenStore = defineStore('bilanzen', {
           id: Date.now(),
           text: note,
           date: new Date().toISOString(),
-          user: 'Bearbeiter' // In einer echten Implementierung würde hier der aktuelle Benutzer stehen
+          user: 'Bearbeiter' // ohne Mock Implementierung würde hier der aktuelle Benutzer stehen
         });
         item.lastEditDate = new Date().toISOString();
       }

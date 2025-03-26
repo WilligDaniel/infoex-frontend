@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '../views/DashboardView.vue'
 import DocumentView from '../views/DocumentView.vue'
 import LoginView from '../views/LoginView.vue'
+import KPIView from '../views/KPIView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -54,7 +55,20 @@ const router = createRouter({
       component: () => import('../views/UploadView.vue'),
       meta: { requiresAuth: true }
     },
-    // Redirect any unknown routes to the dashboard
+    {
+      path: '/bilanz/:id/kpi',
+      name: 'bilanz-kpi',
+      component: KPIView,
+      props: true,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/bilanz/:id/completion',
+      name: 'bilanz-completion',
+      component: () => import('../views/CompletionView.vue'),
+      props: true,
+      meta: { requiresAuth: true }
+    },
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'
@@ -67,16 +81,13 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
 
-  // Check if the route requires authentication
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // If not authenticated, redirect to login
     if (!isAuthenticated) {
       next({ name: 'login' })
     } else {
       next()
     }
   } 
-  // If route is for guests only (like login) and user is authenticated
   else if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
     next({ name: 'dashboard' })
   } else {

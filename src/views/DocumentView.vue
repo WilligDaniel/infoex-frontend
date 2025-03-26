@@ -20,85 +20,6 @@
       <div v-else class="bg-white p-6 shadow">
         <!-- Header mit PDF-Vorschau und Dokumentinfo -->
         <div class="flex flex-col md:flex-row mb-6 relative">
-          <!-- Bearbeitungsmodus-Hinweis entfernt -->
-          
-          <div class="md:w-1/3 mb-4 md:mb-0 md:mr-6">
-            <div class="bg-gray-100 border border-gray-200 h-56 relative">
-              <!-- Statische PDF-Vorschau mit Mock-Bild -->
-              <div class="w-full h-full flex flex-col">
-                <!-- PDF-Inhalt -->
-                <div class="flex-grow flex items-center justify-center bg-[#3A3E42] relative">
-                  <!-- Weißer Bereich in der Mitte für PDF-Inhalt -->
-                  <div class="w-3/5 h-full bg-white mx-auto overflow-auto" ref="pdfContainer" style="max-height: 100%;">
-                    <!-- Container mit fester Größe für den Inhalt -->
-                    <div class="p-4 w-full" :style="{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }">
-                      <p class="text-gray-800 font-medium">FACT GmbH Wirtschaftsprüfungsgesellschaft</p>
-                      <p class="text-sm text-gray-600 mt-2">Seite - 2</p>
-                      <!-- Beispielinhalt für Scrolling -->
-                      <div class="mt-4">
-                        <p class="text-xs mb-1">A. Anlagevermögen: 2.691,00</p>
-                        <p class="text-xs mb-1">B.I Vorräte: 33.949,36</p>
-                        <p class="text-xs mb-1">B.II Forderungen: 24.988,05</p>
-                        <p class="text-xs mb-1">B.III Forderungen: 266.044,83</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Vollbild-Button -->
-                  <div class="absolute top-2 right-2">
-                    <button 
-                      @click="openFullPdf" 
-                      class="w-6 h-6 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
-                      title="In voller Größe öffnen"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <!-- Zoom-Steuerung -->
-                  <div class="absolute bottom-1 right-1 flex space-x-1">
-                    <button 
-                      @click="zoomOut" 
-                      class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
-                      title="Verkleinern"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                      </svg>
-                    </button>
-                    <button 
-                      @click="zoomIn" 
-                      class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
-                      title="Vergrößern"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                    <button 
-                      @click="resetZoom" 
-                      class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
-                      title="Zoom zurücksetzen"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- PDF-Info -->
-                <div class="flex justify-center items-center py-2 bg-gray-50 border-t border-gray-200">
-                  <div class="text-sm text-gray-600">
-                    PDF-Vorschau ({{ Math.round(zoomLevel * 100) }}%)
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-1 text-center">PDF2.pdf - Extraktion von Seiten 15-34</p>
-          </div>
           <div class="md:w-2/3">
             <div class="flex justify-between mb-4">
               <h1 class="text-2xl font-medium mb-4">
@@ -174,6 +95,86 @@
               <div class="info-box bg-[#D9D9D9]">
                 <p class="info-box-label">in</p>
                 <p class="info-box-value">{{ currentDocument.currency || 'EUR' }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- PDF Preview Panel -->
+          <div class="md:w-1/3 relative">
+            <div class="absolute right-0 top-0">
+              <div class="bg-white border border-gray-200 rounded-lg shadow-lg">
+                <!-- Toggle Header -->
+                <div 
+                  @click="isPdfExpanded = !isPdfExpanded"
+                  class="p-2 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+                >
+                  <span class="text-sm font-medium">PDF Vorschau</span>
+                  <svg 
+                    class="w-5 h-5 transform transition-transform"
+                    :class="isPdfExpanded ? 'rotate-180' : ''"
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                
+                <!-- Collapsible Content -->
+                <div v-show="isPdfExpanded" class="border-t border-gray-200">
+                  <div class="h-64 relative">
+                    <!-- PDF Content -->
+                    <div class="w-full h-full flex flex-col">
+                      <div class="flex-grow flex items-center justify-center bg-[#3A3E42] relative">
+                        <!-- PDF Container -->
+                        <div class="w-4/5 h-full bg-white mx-auto overflow-auto" ref="pdfContainer">
+                          <div class="p-4 w-full" :style="{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }">
+                            <p class="text-gray-800 font-medium">FACT GmbH Wirtschaftsprüfungsgesellschaft</p>
+                            <p class="text-sm text-gray-600 mt-2">Seite - 2</p>
+                            <!-- Beispielinhalt für Scrolling -->
+                            <div class="mt-4">
+                              <p class="text-xs mb-1">A. Anlagevermögen: 2.691,00</p>
+                              <p class="text-xs mb-1">B.I Vorräte: 33.949,36</p>
+                              <p class="text-xs mb-1">B.II Forderungen: 24.988,05</p>
+                              <p class="text-xs mb-1">B.III Forderungen: 266.044,83</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Zoom Controls -->
+                        <div class="absolute bottom-1 right-1 flex space-x-1">
+                          <button 
+                            @click="zoomOut" 
+                            class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
+                            title="Verkleinern"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                            </svg>
+                          </button>
+                          <button 
+                            @click="zoomIn" 
+                            class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
+                            title="Vergrößern"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
+                          <button 
+                            @click="resetZoom" 
+                            class="w-5 h-5 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50"
+                            title="Zoom zurücksetzen"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1399,24 +1400,15 @@ const applyMockCorrections = (selectedCorrections) => {
   });
 };
 
-const saveDocument = () => {
-  console.log('Saving document:', documentId.value);
-  isLoading.value = true;
-  
-  // Simulate API call delay
-  setTimeout(() => {
-    // Hier würde normalerweise ein API-Aufruf stattfinden
+const saveDocument = async () => {
+  try {
+    // ... existing save logic ...
     console.log('Document saved successfully');
-    
-    isLoading.value = false;
-    
-    // Zeige Feedback
-    feedbackMessage.value = `Dokument wurde erfolgreich gespeichert.`;
-    showFeedback.value = true;
-    setTimeout(() => {
-      showFeedback.value = false;
-    }, 3000);
-  }, 1000);
+    // Weiterleitung zur KPI-Auswertung
+    router.push(`/bilanz/${currentDocument.value.companyId}/kpi`);
+  } catch (error) {
+    console.error('Error saving document:', error);
+  }
 };
 
 // Neue Methode für das Handling von Korrekturen
@@ -1571,6 +1563,9 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   });
 };
+
+// Add to script setup
+const isPdfExpanded = ref(false);
 </script>
 
 <style scoped>
