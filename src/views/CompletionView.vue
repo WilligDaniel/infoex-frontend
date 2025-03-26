@@ -35,26 +35,32 @@ const inactiveNumber = computed({
 const downloadXLS = () => {
   const number = isPersonalNumber.value ? personalNumber.value : unitNumber.value;
   
-  // Create the download link
-  const link = document.createElement('a');
-  // Use relative path from public directory
-  link.href = `/Waldeck_XLS_EXPORT_.xls`;
-  link.download = `Waldeck_XLS_EXPORT_${number}.xls`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Add to document store which will update the dashboard
-  documentStore.addXLSFile(number);
-  
-  // Show loading animation
-  isLoading.value = true;
-  
-  // Navigate to KPI view after a short delay
-  setTimeout(() => {
-    isLoading.value = false;
-    router.push(`/bilanz/${documentId.value}/kpi`);
-  }, 1500);
+  // Create a Blob from the XLS file URL
+  fetch('/Waldeck_XLS_EXPORT_.xls')
+    .then(response => response.blob())
+    .then(blob => {
+      // Create download link with the correct filename
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Waldeck_XLS_EXPORT_${number}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Add to document store which will update the dashboard
+      documentStore.addXLSFile(number);
+      
+      // Show loading animation
+      isLoading.value = true;
+      
+      // Navigate to dashboard after short delay
+      setTimeout(() => {
+        isLoading.value = false;
+        router.push('/dashboard');
+      }, 1500);
+    });
 };
 
 const finalizeDocument = () => {
