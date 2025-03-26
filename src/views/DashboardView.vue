@@ -10,7 +10,9 @@ const router = useRouter();
 const bilanzenStore = useBilanzenStore();
 const documentStore = useDocumentStore();
 const { isLoading, error } = storeToRefs(bilanzenStore);
-const bilanzen = ref([]);
+
+// Use documents from documentStore instead of local bilanzen ref
+const bilanzen = computed(() => documentStore.documents);
 
 // Tabs state
 const activeTab = ref('all');
@@ -123,7 +125,7 @@ const handleIdentifierSubmit = () => {
   };
   
   // Add to bilanzen array
-  bilanzen.value = [entry, ...bilanzen.value];
+  documentStore.addDocument(entry);
   
   // Process the file (show loading animation)
   isProcessing.value = true;
@@ -135,6 +137,22 @@ const handleIdentifierSubmit = () => {
   }, 1500);
 };
 
+// Add function to handle new XLS file
+const addXLSFile = (personalNumber) => {
+  const entry = {
+    id: Date.now(), // Generate unique ID
+    name: `Waldeck_XLS_EXPORT_${personalNumber}.xls`,
+    company: 'Waldeck GmbH',
+    documentType: 'XLS Export',
+    date: new Date().toLocaleDateString('de-DE'),
+    status: 'Verarbeitet',
+    type: 'xls'
+  };
+  
+  // Add to beginning of bilanzen array
+  documentStore.addDocument(entry);
+};
+
 const closeIdentifierDialog = () => {
   showIdentifierDialog.value = false;
   isProcessing.value = false;
@@ -143,32 +161,8 @@ const closeIdentifierDialog = () => {
 };
 
 onMounted(() => {
-  // Initialisiere bilanzen mit einem leeren Array, falls es undefined ist
-  if (!bilanzen.value) {
-    bilanzen.value = [];
-  }
-  
-  // Mock-Daten für die Bilanzen
-  bilanzen.value = [
-    {
-      id: 2,
-      name: 'Waldeck_XLS1.xls',
-      company: 'Waldeck GmbH',
-      documentType: 'GuV',
-      date: '15.04.2023',
-      status: 'Verarbeitet',
-      type: 'xls'
-    },
-    {
-      id: 3,
-      name: 'Waldeck_PDF1.pdf',
-      company: 'Waldeck GmbH',
-      documentType: 'Bilanz',
-      date: '10.03.2023',
-      status: 'Fehler',
-      type: 'pdf'
-    }
-  ];
+  // No need to initialize mock data anymore as we're using the store
+  console.log('Dashboard mounted');
 });
 </script>
 

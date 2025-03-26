@@ -17,27 +17,21 @@ export const useDocumentStore = defineStore('document', {
     documents: [
       {
         id: '1',
-        companyName: 'Waldeck GmbH',
+        name: 'Waldeck_PDF2.pdf',
+        company: 'Waldeck GmbH',
         companyId: 'WD-1',
         documentType: 'Jahresabschluss',
         documentMethod: 'Automatisch extrahiert',
+        date: '26.03.2024',
         totalAssets: 481331.29,
         totalLiabilities: 481331.29,
         currency: 'EUR',
-        status: 'In Bearbeitung'
-      },
-      {
-        id: '2',
-        companyName: 'Mustermann AG',
-        companyId: 'MA-2',
-        documentType: 'Jahresabschluss',
-        documentMethod: 'Manuell erfasst',
-        totalAssets: 750000.00,
-        totalLiabilities: 750000.00,
-        currency: 'EUR',
-        status: 'Abgeschlossen'
+        status: 'In Bearbeitung',
+        type: 'pdf'
       }
-    ]
+    ],
+    isLoading: false,
+    error: null
   }),
   
   actions: {
@@ -83,6 +77,26 @@ export const useDocumentStore = defineStore('document', {
         currency: 'EUR',
         status: ''
       };
+    },
+
+    addXLSFile(personalNumber) {
+      const entry = {
+        id: Date.now().toString(),
+        name: `Waldeck_XLS_EXPORT_${personalNumber}.xls`,
+        company: 'Waldeck GmbH',
+        documentType: 'XLS Export',
+        date: new Date().toLocaleDateString('de-DE'),
+        status: 'Verarbeitet',
+        type: 'xls'
+      };
+      
+      // Add to beginning of documents array
+      this.documents.unshift(entry);
+    },
+
+    addDocument(document) {
+      // Add to beginning of documents array
+      this.documents.unshift(document);
     }
   }
 }) 

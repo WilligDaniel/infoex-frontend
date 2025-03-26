@@ -54,31 +54,22 @@
   /* --- Button System --- */
   /* Base button style */
   .btn {
-    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full text-sm font-normal transition-colors;
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
   }
   
-  .btn:hover {
-    @apply border-primary-dark text-primary-dark;
-  }
-  
-  /* Button variants */
+  /* Primary button (blue) */
   .btn-primary {
-    @apply bg-primary text-white border-primary;
+    @apply bg-blue-600 text-white border-transparent hover:bg-blue-500;
   }
   
-  .btn-primary:hover {
-    @apply bg-primary-dark border-primary-dark;
+  /* Secondary button */
+  .btn-secondary {
+    @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
   }
   
-  /* Apply the same styling to bare buttons */
+  /* Apply base button style to all buttons */
   button {
-    @apply btn;
-  }
-  
-  button:focus, button:focus-visible {
-    /* Removed focus outline for no highlight
-    @apply outline outline-4 outline-[#4f46e5];
-    */
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
   }
   
   /* Icon button without borders or backgrounds */
@@ -100,7 +91,7 @@
   }
   
   .login-button {
-    @apply bg-white text-primary border border-primary px-6 py-2 rounded-full hover:border-primary-dark hover:text-primary-dark transition-colors text-sm font-normal;
+    @apply bg-blue-600 text-white border-transparent px-4 py-2 rounded-lg hover:bg-blue-500 transition-all duration-200 text-sm font-medium;
   }
   
   .forgot-password {
@@ -131,12 +122,10 @@
   
   .table-header {
     @apply text-left font-medium text-gray-600 text-sm px-3;
-    /* Removed py-3 as we're applying it directly in the markup */
   }
 
   .table-cell {
     @apply whitespace-nowrap text-sm text-gray-900 px-3;
-    /* Removed py-3 as we're applying it directly in the markup */
   }
 
   .data-table td {

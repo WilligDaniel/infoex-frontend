@@ -1401,14 +1401,8 @@ const applyMockCorrections = (selectedCorrections) => {
 };
 
 const saveDocument = async () => {
-  try {
-    // ... existing save logic ...
-    console.log('Document saved successfully');
-    // Weiterleitung zur KPI-Auswertung
-    router.push(`/bilanz/${currentDocument.value.companyId}/kpi`);
-  } catch (error) {
-    console.error('Error saving document:', error);
-  }
+  // Navigate to KPI view
+  router.push(`/bilanz/${documentId.value}/kpi`);
 };
 
 // Neue Methode für das Handling von Korrekturen

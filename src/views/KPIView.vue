@@ -1,5 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
+  <!-- Loading Overlay -->
+  <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96">
+      <div class="flex flex-col items-center">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-lg font-medium">KPI-Auswertung wird geladen...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="min-h-screen bg-gray-50 py-8" :class="{ 'opacity-0': isLoading }">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
       <h2 class="text-2xl font-medium mb-6">KPI-Auswertung</h2>
       
@@ -59,10 +72,10 @@
           Zurück zum Dashboard
         </button>
         <button 
-          @click="$router.push('/dashboard')"
+          @click="navigateToCompletion"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
         >
-          Abschließen
+          Weiter zur Abschließung
         </button>
       </div>
     </div>
@@ -70,10 +83,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
+const router = useRouter();
 const route = useRoute();
+const documentId = ref(route.params.id);
+const isLoading = ref(true);
+
+const navigateToCompletion = () => {
+  router.push(`/bilanz/${documentId.value}/completion`);
+};
+
+onMounted(() => {
+  // Simulate loading delay
+  setTimeout(() => {
+    isLoading.value = false;
+  }, 1500);
+});
 
 const kpis = ref([
   {
