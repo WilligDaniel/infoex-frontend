@@ -37,7 +37,8 @@ const downloadXLS = () => {
   
   // Create the download link
   const link = document.createElement('a');
-  link.href = `/src/assets/Waldeck_XLS_EXPORT_.xls`;
+  // Use relative path from public directory
+  link.href = `/Waldeck_XLS_EXPORT_.xls`;
   link.download = `Waldeck_XLS_EXPORT_${number}.xls`;
   document.body.appendChild(link);
   link.click();
@@ -45,18 +46,6 @@ const downloadXLS = () => {
   
   // Add to document store which will update the dashboard
   documentStore.addXLSFile(number);
-  
-  // Navigate to dashboard after short delay
-  setTimeout(() => {
-    router.push('/dashboard');
-  }, 500);
-};
-
-const finalizeDocument = () => {
-  if ((isPersonalNumber.value && !personalNumber.value) || (!isPersonalNumber.value && !unitNumber.value)) {
-    alert('Bitte geben Sie eine Nummer ein');
-    return;
-  }
   
   // Show loading animation
   isLoading.value = true;
@@ -66,6 +55,14 @@ const finalizeDocument = () => {
     isLoading.value = false;
     router.push(`/bilanz/${documentId.value}/kpi`);
   }, 1500);
+};
+
+const finalizeDocument = () => {
+  if ((isPersonalNumber.value && !personalNumber.value) || (!isPersonalNumber.value && !unitNumber.value)) {
+    alert('Bitte geben Sie eine Nummer ein');
+    return;
+  }
+  downloadXLS();
 };
 </script>
 
