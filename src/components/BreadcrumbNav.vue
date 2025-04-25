@@ -29,7 +29,7 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -41,4 +41,10 @@ const documentId = computed(() => {
   }
   return null;
 });
+</script>
+
+<script lang="ts">
+export default {
+  name: 'BreadcrumbNav'
+};
 </script> 

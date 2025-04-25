@@ -8,6 +8,9 @@ const isUploading = ref(false);
 const uploadProgress = ref(0);
 const dragActive = ref(false);
 const fileInput = ref(null);
+const personalNumber = ref('');
+const unitNumber = ref('');
+const businessSector = ref('');
 
 const handleFileChange = async (event) => {
   const files = event.target.files;
@@ -112,6 +115,36 @@ const uploadFile = async (file) => {
       </div>
       <p class="mt-2">Hochladen... {{ uploadProgress }}%</p>
     </div>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Personalnummer</label>
+    <input
+      v-model="personalNumber"
+      type="text"
+      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      placeholder="Personalnummer eingeben"
+    />
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Einheitsnummer</label>
+    <input
+      v-model="unitNumber"
+      type="text"
+      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      placeholder="Einheitennummer eingeben"
+    />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Geschäftsbereich</label>
+    <input
+      v-model="businessSector"
+      type="text"
+      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      placeholder="Geschäftsbereich eingeben"
+    />
   </div>
 </template>
 

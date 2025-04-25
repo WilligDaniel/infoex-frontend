@@ -29,7 +29,7 @@ export const useAuthStore = defineStore('auth', {
           this.isAuthenticated = true;
           return true;
         } else {
-          throw new Error('Ungültige Anmeldedaten');
+          throw new Error('Ungültige Anmeldedaten');2
         }
       } catch (error) {
         this.error = error.message;

@@ -4,47 +4,30 @@ import { ref, computed } from 'vue';
 export const useBilanzenStore = defineStore('bilanzen', {
   state: () => ({
     bilanzData: {
-      Aktiva: [
-        { id: 'A', number: 'A', position: 'Anlagevermögen', customerValue: 2691.00, ratingValue: 2691.00, previousValue: 3.00, isSum: true, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'B.I', number: 'B.I', position: 'Vorräte', customerValue: 33949.36, ratingValue: 33949.36, previousValue: 27240.01, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'B.II', number: 'B.II', position: 'Forderungen aus Lieferungen & Leistungen', customerValue: 24988.05, ratingValue: 24988.05, previousValue: 21987.40, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'B.III', number: 'B.III', position: 'Forderungen gegen verbundene Unternehmen', customerValue: 266044.83, ratingValue: 266044.83, previousValue: 237655.96, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'B.IV', number: 'B.IV', position: 'Forderungen gegen Gesellschafter', customerValue: 33320.48, ratingValue: 33320.48, previousValue: 31860.88, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'C', number: 'C', position: 'Sonstige Vermögensgegenstände', customerValue: 98934.00, ratingValue: 98934.00, previousValue: 64761.97, isSum: true, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'D', number: 'D', position: 'Guthaben bei Kreditinstituten', customerValue: 21403.57, ratingValue: 21403.57, previousValue: 51647.83, isSum: true, hasError: false, hasWarning: false, notes: [], lastEditDate: null }
-      ],
-      Passiva: [
-        { id: 'A', number: 'A', position: 'Eigenkapital', customerValue: 10000.00, ratingValue: 10000.00, previousValue: 10000.00, isSum: true, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'B', number: 'B', position: 'Rücklagen', customerValue: 606.85, ratingValue: 606.85, previousValue: 606.85, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'C.I', number: 'C.I', position: 'Steuerrückstellungen', customerValue: 19500.00, ratingValue: 19500.00, previousValue: 19500.00, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'C.II', number: 'C.II', position: 'Sonstige Rückstellungen', customerValue: 8050.00, ratingValue: 8050.00, previousValue: 7450.00, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'D.I', number: 'D.I', position: 'Verbindlichkeiten gegenüber Kreditinstituten', customerValue: 307096.63, ratingValue: 307096.63, previousValue: 308591.94, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'D.II', number: 'D.II', position: 'Verbindlichkeiten aus Lieferungen & Leistungen', customerValue: 102618.03, ratingValue: 102618.03, previousValue: 40617.28, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'D.III', number: 'D.III', position: 'Verbindlichkeiten gegenüber Gesellschaftern', customerValue: 29596.61, ratingValue: 29596.61, previousValue: 29604.77, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: 'D.IV', number: 'D.IV', position: 'Sonstige Verbindlichkeiten', customerValue: 3863.17, ratingValue: 3863.17, previousValue: 18786.21, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null }
-      ],
-      GuV: [
-        { id: '1', number: '1', position: 'Umsatzerlöse', customerValue: 1108067.76, ratingValue: 1108067.76, previousValue: 1188926.79, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '2', number: '2', position: 'Sonstige betriebliche Erträge', customerValue: 4009.94, ratingValue: 4009.94, previousValue: 12934.44, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '3', number: '3', position: 'Materialaufwand', customerValue: -692994.99, ratingValue: -692994.99, previousValue: -743169.94, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '4', number: '4', position: 'Personalaufwand', customerValue: -85020.29, ratingValue: -85020.29, previousValue: -150.00, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '5', number: '5', position: 'Abschreibungen auf Sachanlagen', customerValue: -142.50, ratingValue: -142.50, previousValue: -1392.08, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '6', number: '6', position: 'Sonstige betriebliche Aufwendungen', customerValue: -121096.41, ratingValue: -121096.41, previousValue: -274182.38, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '7', number: '7', position: 'Sonstige Zinsen und ähnliche Erträge', customerValue: 1009.53, ratingValue: 1009.53, previousValue: 1293.31, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '8', number: '8', position: 'Zinsen und ähnliche Aufwendungen', customerValue: -12768.40, ratingValue: -12768.40, previousValue: -6417.35, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '9', number: '9', position: 'Steuern vom Einkommen und Ertrag', customerValue: -31131.00, ratingValue: -31131.00, previousValue: -25259.00, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '10', number: '10', position: 'Sonstige Steuern', customerValue: -443.01, ratingValue: -443.01, previousValue: -17.00, isSum: false, hasError: false, hasWarning: false, notes: [], lastEditDate: null },
-        { id: '11', number: '11', position: 'Jahresüberschuss', customerValue: 169490.63, ratingValue: 169490.63, previousValue: 153000.00, isSum: true, hasError: false, hasWarning: false, notes: [], lastEditDate: null }
-      ]
+      Aktiva: [],
+      Passiva: [],
+      GuV: []
     },
-      corrections: [
-      { id: 1, description: 'Korrektur der Forderungen gegen verbundene Unternehmen', oldValue: 266044.83, newValue: 266044.83, position: 'B.III', type: 'Aktiva' },
-      { id: 2, description: 'Anpassung der Verbindlichkeiten aus Lieferungen und Leistungen', oldValue: 65731.29, newValue: 65731.29, position: 'C.2', type: 'Passiva' },
-      { id: 3, description: 'Korrektur der sonstigen betrieblichen Aufwendungen', oldValue: -120000.00, newValue: -120000.00, position: '6', type: 'GuV' }
-    ],
+    corrections: [],
     bilanzen: [],
     isLoading: false,
-    error: null
+    error: null,
+    editMode: false,
+    editingItem: null,
+    sessionData: {
+      SessionId: null,
+      Einheitennummer: null,
+      Personenummer: null,
+      Branche: null,
+      Name: null,
+      Abschlussjahr: null,
+      Von: null,
+      Bis: null,
+      Abschlussersteller: null,
+      Rechtsform: null
+    },
+    summenregeln: null,
+    umkontierungen: null
   }),
   
   getters: {
@@ -53,15 +36,234 @@ export const useBilanzenStore = defineStore('bilanzen', {
     },
     errorBilanzen: (state) => {
       return state.bilanzen ? state.bilanzen.filter(b => b.status === 'Fehler') : [];
-    }
+    },
+    totalAssets: (state) => {
+      return state.bilanzData.Aktiva.reduce((sum, item) => sum + (item.ratingValue || 0), 0);
+    },
+    totalLiabilities: (state) => {
+      return state.bilanzData.Passiva.reduce((sum, item) => sum + (item.ratingValue || 0), 0);
+    },
+    getAktiva: (state) => state.bilanzData.Aktiva,
+    getPassiva: (state) => state.bilanzData.Passiva,
+    getGuV: (state) => state.bilanzData.GuV,
+    
+    // Neue Getter für editierbare Spalten
+    editableColumns: () => ({
+      customerValue: true,
+      ratingValue: true,
+      previousValue: true
+    }),
+    
+    // Getter für Spalten-Konfiguration
+    columnConfig: () => ({
+      position: {
+        editable: false,
+        type: 'text'
+      },
+      customerValue: {
+        editable: true,
+        type: 'number',
+        format: 'de-DE'
+      },
+      ratingValue: {
+        editable: true,
+        type: 'number',
+        format: 'de-DE'
+      },
+      previousValue: {
+        editable: true,
+        type: 'number',
+        format: 'de-DE'
+      }
+    }),
+    
+    // Getter für Zellen-Editierbarkeit
+    isCellEditable: (state) => (item, column) => {
+      // Summenzeilen sind nicht editierbar
+      if (item.isSum) {
+        return false;
+      }
+      
+      // Position ist nie editierbar
+      if (column === 'position') {
+        return false;
+      }
+      
+      // Andere Spalten sind editierbar
+      return ['customerValue', 'ratingValue', 'previousValue'].includes(column);
+    },
+
+    isEditing: (state) => state.editMode,
+    currentEditingItem: (state) => state.editingItem,
+    
+    // Vereinfachte editierbare Spalten
+    editableFields: () => [
+      {
+        field: 'customerValue',
+        label: 'Kundenwert',
+        editable: true
+      },
+      {
+        field: 'ratingValue',
+        label: 'Ratingwert',
+        editable: true
+      },
+      {
+        field: 'previousValue',
+        label: 'Vorjahreswert',
+        editable: true
+      }
+    ]
   },
   
   actions: {
-    loadBilanzData() {
-      console.log('Loading Bilanz data');
-      // In einer echten Anwendung würde hier ein API-Aufruf stattfinden
-      // Hier verwenden wir die bereits vorhandenen Mock-Daten
-      return this.bilanzData;
+    updateValue(section, itemId, field, newValue) {
+      console.log('Updating value:', { section, itemId, field, newValue });
+      
+      const item = this.bilanzData[section].find(i => i.id === itemId || i.number === itemId);
+      if (!item) {
+        console.error('Item not found:', itemId);
+        return false;
+      }
+
+      try {
+        // Convert string format (e.g. "30.190,00") to number if needed
+        let value = newValue;
+        if (typeof value === 'string') {
+          // Remove all dots except the last one (German number format)
+          value = value.replace(/\.(?=.*\.)/g, '').replace(',', '.');
+          value = parseFloat(value) || 0;
+        }
+
+        const oldValue = item[field];
+        
+        item[field] = value;
+
+        item.hasWarning = true;
+        item.lastEditDate = new Date().toISOString();
+
+        if (field === 'customerValue') {
+          item.ratingValue = value;
+          item.correction = 0; // Reset any previous corrections
+          item.automaticCorrection = false;
+        }
+
+        console.log('Value updated:', { oldValue, newValue: value });
+
+        // Recalculate sums
+        this.applySum(section);
+        this.updateTotals();
+
+        return true;
+      } catch (error) {
+        console.error('Error updating value:', error);
+        return false;
+      }
+    },
+    
+    loadBilanzData(jsonData = null) {
+      console.log('Loading Bilanz data with:', jsonData);
+      this.isLoading = true;
+      
+      try {
+        if (jsonData) {
+          // Store session data
+          this.sessionData = {
+            SessionId: jsonData.SessionId || null,
+            Einheitennummer: jsonData.Einheitennummer || null,
+            Personenummer: jsonData.Personenummer || null,
+            Branche: jsonData.Branche || null,
+            Name: jsonData.Name || null,
+            Abschlussjahr: jsonData.Abschlussjahr || null,
+            Von: jsonData.Von || null,
+            Bis: jsonData.Bis || null,
+            Abschlussersteller: jsonData.Abschlussersteller || null,
+            Rechtsform: jsonData.Rechtsform || null
+          };
+
+          if (jsonData.bilanzData) {
+            this.bilanzData = {
+              Aktiva: this.transformBalanceItems(jsonData.bilanzData.Aktiva || []),
+              Passiva: this.transformBalanceItems(jsonData.bilanzData.Passiva || []),
+              GuV: this.transformBalanceItems(jsonData.bilanzData.GuV || [])
+            };
+            
+            this.normalizeValues('Aktiva');
+            this.normalizeValues('Passiva');
+            this.normalizeValues('GuV');
+          }
+          
+          if (jsonData.Summenregeln) {
+            this.summenregeln = jsonData.Summenregeln;
+          }
+          
+          if (jsonData.Umkontierungen) {
+            this.umkontierungen = jsonData.Umkontierungen;
+          }
+          
+          if (jsonData.corrections) {
+            this.corrections = jsonData.corrections;
+          }
+        } else {
+          this.loadMockData();
+        }
+        
+        this.isLoading = false;
+        console.log('Transformed data:', this.bilanzData);
+        return this.bilanzData;
+      } catch (error) {
+        console.error('Error loading bilanz data:', error);
+        this.error = error.message;
+        this.isLoading = false;
+        throw error;
+      }
+    },
+    
+    transformBalanceItems(items) {
+      const transformedItems = [];
+      
+      items.forEach(item => {
+        // Add parent item
+        transformedItems.push({
+          id: item.position,
+          number: item.number || item.position,
+          position: item.position,
+          description: item.description,
+          customerValue: item.amount || 0,
+          ratingValue: item.amount || 0,
+          previousValue: item.previousValue || 0,
+          isSum: !item.children || item.children.length > 0,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null,
+          correction: 0,
+          automaticCorrection: false
+        });
+        
+        if (item.children && Array.isArray(item.children)) {
+          item.children.forEach(child => {
+            transformedItems.push({
+              id: child.position,
+              number: child.number || child.position,
+              position: child.position,
+              description: child.description,
+              customerValue: child.amount || 0,
+              ratingValue: child.amount || 0,
+              previousValue: child.previousValue || 0,
+              isSum: false,
+              hasError: false,
+              hasWarning: false,
+              notes: [],
+              lastEditDate: null,
+              correction: 0,
+              automaticCorrection: false
+            });
+          });
+        }
+      });
+      
+      return transformedItems;
     },
     
     getCorrections() {
@@ -72,12 +274,10 @@ export const useBilanzenStore = defineStore('bilanzen', {
     applyCorrections(selectedCorrectionIds) {
       console.log('Applying corrections:', selectedCorrectionIds);
       
-      // Simuliere die Anwendung von Korrekturen
       selectedCorrectionIds.forEach(correctionId => {
         const correction = this.corrections.find(c => c.id === correctionId);
         
         if (correction) {
-          // Finde das entsprechende Element in der Bilanz
           let targetArray;
           if (correction.type === 'Aktiva') {
             targetArray = this.bilanzData.Aktiva;
@@ -90,16 +290,16 @@ export const useBilanzenStore = defineStore('bilanzen', {
           const item = targetArray.find(i => i.number === correction.position);
           
           if (item) {
-            // Wende die Korrektur an
             item.ratingValue = correction.newValue;
             item.hasWarning = true;
+            item.correction = correction.newValue - item.customerValue;
+            item.automaticCorrection = true;
             
             console.log(`Applied correction to ${correction.type} ${correction.position}: ${correction.oldValue} -> ${correction.newValue}`);
           }
         }
       });
       
-      // Wende Summenregeln an
       this.applySum('Aktiva');
       this.applySum('Passiva');
       this.applySum('GuV');
@@ -111,68 +311,78 @@ export const useBilanzenStore = defineStore('bilanzen', {
       console.log(`Applying sum rules for ${type}`);
       
       if (type === 'Aktiva') {
-        // Berechne die Summe des Anlagevermögens (A)
         const anlagevermögen = this.bilanzData.Aktiva.find(i => i.number === 'A');
         if (anlagevermögen) {
           const sum = this.bilanzData.Aktiva
             .filter(i => i.number.startsWith('A.'))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
+            .reduce((acc, item) => acc + (item.customerValue || 0), 0);
+          anlagevermögen.customerValue = sum;
           anlagevermögen.ratingValue = sum;
         }
         
-        // Berechne die Summe des Umlaufvermögens (B)
+        // Berechne Summe für Umlaufvermögen (B)
         const umlaufvermögen = this.bilanzData.Aktiva.find(i => i.number === 'B');
         if (umlaufvermögen) {
           const sum = this.bilanzData.Aktiva
             .filter(i => i.number.startsWith('B.'))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
+            .reduce((acc, item) => acc + (item.customerValue || 0), 0);
+          umlaufvermögen.customerValue = sum;
           umlaufvermögen.ratingValue = sum;
         }
-        
-        // Berechne die Bilanzsumme
-        const bilanzsumme = this.bilanzData.Aktiva.find(i => i.number === 'Σ');
-        if (bilanzsumme) {
-          const sum = this.bilanzData.Aktiva
-            .filter(i => ['A', 'B', 'C', 'D'].includes(i.number))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
-          bilanzsumme.ratingValue = sum;
-        }
       } else if (type === 'Passiva') {
-        // Berechne die Summe des Eigenkapitals (A)
+        // Berechne Summe für Eigenkapital (A)
         const eigenkapital = this.bilanzData.Passiva.find(i => i.number === 'A');
         if (eigenkapital) {
           const sum = this.bilanzData.Passiva
             .filter(i => i.number.startsWith('A.'))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
+            .reduce((acc, item) => acc + (item.customerValue || 0), 0);
+          eigenkapital.customerValue = sum;
           eigenkapital.ratingValue = sum;
         }
         
-        // Berechne die Summe der Verbindlichkeiten (C)
-        const verbindlichkeiten = this.bilanzData.Passiva.find(i => i.number === 'C');
+        // Berechne Summe für Verbindlichkeiten (B)
+        const verbindlichkeiten = this.bilanzData.Passiva.find(i => i.number === 'B');
         if (verbindlichkeiten) {
           const sum = this.bilanzData.Passiva
-            .filter(i => i.number.startsWith('C.'))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
+            .filter(i => i.number.startsWith('B.'))
+            .reduce((acc, item) => acc + (item.customerValue || 0), 0);
+          verbindlichkeiten.customerValue = sum;
           verbindlichkeiten.ratingValue = sum;
         }
-        
-        // Berechne die Bilanzsumme
-        const bilanzsumme = this.bilanzData.Passiva.find(i => i.number === 'Σ');
-        if (bilanzsumme) {
-          const sum = this.bilanzData.Passiva
-            .filter(i => ['A', 'B', 'C'].includes(i.number))
-            .reduce((acc, item) => acc + item.ratingValue, 0);
-          bilanzsumme.ratingValue = sum;
+      }
+      
+      this.updateTotals();
+    },
+    
+    updateTotals() {
+      // Berechne Bilanzsumme Aktiva
+      const aktivaTotal = this.bilanzData.Aktiva.reduce((sum, item) => {
+        if (item.number.length === 1) {
+          return sum + (item.customerValue || 0);
         }
-      } else if (type === 'GuV') {
-        // Berechne den Jahresüberschuss/-fehlbetrag
-        const jahresergebnis = this.bilanzData.GuV.find(i => i.number === '10');
-        if (jahresergebnis) {
-          const sum = this.bilanzData.GuV
-            .filter(i => i.number !== '10')
-            .reduce((acc, item) => acc + item.ratingValue, 0);
-          jahresergebnis.ratingValue = sum;
+        return sum;
+      }, 0);
+      
+      // Berechne Bilanzsumme Passiva
+      const passivaTotal = this.bilanzData.Passiva.reduce((sum, item) => {
+        // Nur Hauptpositionen (A, B) in die Gesamtsumme einbeziehen
+        if (item.number.length === 1) {
+          return sum + (item.customerValue || 0);
         }
+        return sum;
+      }, 0);
+      
+      // Aktualisiere die Summenzeilen falls vorhanden
+      const aktivaSumme = this.bilanzData.Aktiva.find(i => i.number === 'Σ');
+      if (aktivaSumme) {
+        aktivaSumme.customerValue = aktivaTotal;
+        aktivaSumme.ratingValue = aktivaTotal;
+      }
+      
+      const passivaSumme = this.bilanzData.Passiva.find(i => i.number === 'Σ');
+      if (passivaSumme) {
+        passivaSumme.customerValue = passivaTotal;
+        passivaSumme.ratingValue = passivaTotal;
       }
     },
     
@@ -181,8 +391,6 @@ export const useBilanzenStore = defineStore('bilanzen', {
       this.error = null;
       
       try {
-        // ohne Mock würde hier ein API-Aufruf stattfinden
-        // Hier setzen wir einfach Mock-Daten
         this.bilanzen = [
           {
             id: 2,
@@ -219,7 +427,7 @@ export const useBilanzenStore = defineStore('bilanzen', {
           id: Date.now(),
           text: note,
           date: new Date().toISOString(),
-          user: 'Bearbeiter' // ohne Mock Implementierung würde hier der aktuelle Benutzer stehen
+          user: 'Bearbeiter'
         });
         item.lastEditDate = new Date().toISOString();
       }
@@ -238,6 +446,287 @@ export const useBilanzenStore = defineStore('bilanzen', {
     getNotes(section, itemId) {
       const item = this.bilanzData[section].find(i => i.id === itemId);
       return item ? item.notes : [];
+    },
+
+    prepareDataForSave() {
+      return {
+        sessionId: this.sessionData.SessionId,
+        identificationNumber: this.sessionData.Personenummer,
+        balanceSheet: {
+          assets: this.bilanzData.Aktiva.map(item => ({
+            position: item.number,
+            description: item.position,
+            value: item.customerValue,
+            ratingValue: item.ratingValue,
+            previousValue: item.previousValue,
+            correction: item.correction,
+            automaticCorrection: item.automaticCorrection,
+            notes: item.notes
+          })),
+          liabilities: this.bilanzData.Passiva.map(item => ({
+            position: item.number,
+            description: item.position,
+            value: item.customerValue,
+            ratingValue: item.ratingValue,
+            previousValue: item.previousValue,
+            correction: item.correction,
+            automaticCorrection: item.automaticCorrection,
+            notes: item.notes
+          }))
+        },
+        profitAndLoss: this.bilanzData.GuV.map(item => ({
+          position: item.number,
+          description: item.position,
+          value: item.customerValue,
+          ratingValue: item.ratingValue,
+          previousValue: item.previousValue,
+          correction: item.correction,
+          automaticCorrection: item.automaticCorrection,
+          notes: item.notes
+        })),
+        corrections: this.corrections
+      };
+    },
+
+    normalizeValues(section) {
+      this.bilanzData[section].forEach(item => {
+        // Handle customerValue
+        if (typeof item.customerValue === 'string' && item.customerValue !== '') {
+          item.customerValue = parseFloat(item.customerValue.replace('.', '').replace(',', '.'));
+        } else if (item.customerValue === '' || item.customerValue === null || isNaN(item.customerValue)) {
+          item.customerValue = 0;
+        }
+        
+        if (item.ratingValue === null || item.ratingValue === undefined || isNaN(item.ratingValue)) {
+          item.ratingValue = item.customerValue;
+        }
+        
+        if (typeof item.previousValue === 'string' && item.previousValue !== '') {
+          item.previousValue = parseFloat(item.previousValue.replace('.', '').replace(',', '.'));
+        } else if (item.previousValue === '' || item.previousValue === null || isNaN(item.previousValue)) {
+          item.previousValue = 0;
+        }
+        
+        if (!Array.isArray(item.notes)) {
+          item.notes = [];
+        } else {
+          item.notes = item.notes.filter(note => note !== null && note !== undefined && !isNaN(note) && note !== '');
+        }
+        
+        if (!item.id) {
+          item.id = `${section}_${item.number}_${Date.now()}`;
+        }
+      });
+    },
+
+    loadMockData() {
+      console.log('Loading mock data');
+      
+      // Mock session data
+      this.sessionData = {
+        SessionId: 'Mustermann-1234',
+        Einheitennummer: '1234567',
+        Personenummer: '7654321',
+        Branche: 'IT Services',
+        Name: 'Mustermann GmbH',
+        Abschlussjahr: '2024',
+        Von: '2024-01-01',
+        Bis: '2024-12-31',
+        Abschlussersteller: 'Steuerberater Mustermann',
+        Rechtsform: 'GmbH'
+      };
+      
+      // Mock Aktiva
+      this.bilanzData.Aktiva = [
+        {
+          id: 'aktiva_A_' + Date.now(),
+          number: 'A',
+          position: 'ANLAGEVERMÖGEN',
+          customerValue: 413026,
+          ratingValue: 413026,
+          previousValue: 359264,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        },
+        {
+          id: 'aktiva_B_' + Date.now(),
+          number: 'B',
+          position: 'UMLAUFVERMÖGEN',
+          customerValue: 773084,
+          ratingValue: 773084,
+          previousValue: 1179787,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        },
+        {
+          id: 'aktiva_sum_' + Date.now(),
+          number: 'Σ',
+          position: 'BILANZSUMME AKTIVA',
+          customerValue: 1186110,
+          ratingValue: 1186110,
+          previousValue: 1539051,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        }
+      ];
+      
+      // Mock Passiva
+      this.bilanzData.Passiva = [
+        {
+          id: 'passiva_A_' + Date.now(),
+          number: 'A',
+          position: 'EIGENKAPITAL',
+          customerValue: 3068498,
+          ratingValue: 3068498,
+          previousValue: 2528465,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        },
+        {
+          id: 'passiva_B_' + Date.now(),
+          number: 'B',
+          position: 'FREMDKAPITAL',
+          customerValue: 1392382,
+          ratingValue: 1392382,
+          previousValue: 1448955,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        },
+        {
+          id: 'passiva_sum_' + Date.now(),
+          number: 'Σ',
+          position: 'BILANZSUMME PASSIVA',
+          customerValue: 1186110,
+          ratingValue: 1186110,
+          previousValue: 1539051,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        }
+      ];
+      
+      // Mock GuV
+      this.bilanzData.GuV = [
+        {
+          id: 'guv_1_' + Date.now(),
+          number: '13001',
+          position: 'Umsatzerlöse',
+          customerValue: 1108067.76,
+          ratingValue: 1108067.76,
+          previousValue: 1188926.79,
+          isSum: false,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        },
+        {
+          id: 'guv_2_' + Date.now(),
+          number: '13011',
+          position: 'Jahresüberschuss',
+          customerValue: 169490.63,
+          ratingValue: 169490.63,
+          previousValue: 153000.00,
+          isSum: true,
+          hasError: false,
+          hasWarning: false,
+          notes: [],
+          lastEditDate: null
+        }
+      ];
+    },
+
+    // Neue Methoden für Edit-Mode
+    startEditing(section, itemId) {
+      const item = this.bilanzData[section].find(i => i.id === itemId || i.number === itemId);
+      if (item && !item.isSum) {
+        this.editMode = true;
+        this.editingItem = {
+          section,
+          item: { ...item }
+        };
+      }
+    },
+
+    cancelEditing() {
+      this.editMode = false;
+      this.editingItem = null;
+    },
+
+    saveEdit() {
+      if (!this.editingItem) return;
+
+      const { section, item } = this.editingItem;
+      const originalItem = this.bilanzData[section].find(i => i.id === item.id || i.number === item.number);
+      
+      if (originalItem) {
+        // Update values
+        originalItem.customerValue = parseFloat(item.customerValue) || 0;
+        originalItem.ratingValue = parseFloat(item.ratingValue) || 0;
+        originalItem.previousValue = parseFloat(item.previousValue) || 0;
+        
+        // Mark as modified
+        originalItem.hasWarning = true;
+        originalItem.lastEditDate = new Date().toISOString();
+        
+        // Recalculate sums
+        this.applySum(section);
+        this.updateTotals();
+      }
+
+      this.editMode = false;
+      this.editingItem = null;
+    },
+
+    // Vereinfachte Update-Methode
+    updateItemValue(section, itemId, field, value) {
+      const item = this.bilanzData[section].find(i => i.id === itemId || i.number === itemId);
+      if (!item || item.isSum) return false;
+
+      try {
+        // Konvertiere String-Werte in Zahlen
+        const numValue = typeof value === 'string' 
+          ? parseFloat(value.replace(/\./g, '').replace(',', '.')) 
+          : value;
+
+        if (isNaN(numValue)) return false;
+
+        // Update Wert
+        item[field] = numValue;
+        item.hasWarning = true;
+        item.lastEditDate = new Date().toISOString();
+
+        // Update Rating-Wert wenn Kundenwert geändert
+        if (field === 'customerValue') {
+          item.ratingValue = numValue;
+        }
+
+        // Summen neu berechnen
+        this.applySum(section);
+        this.updateTotals();
+
+        return true;
+      } catch (error) {
+        console.error('Error updating value:', error);
+        return false;
+      }
     }
   }
 }); 

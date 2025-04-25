@@ -88,12 +88,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, defineProps, defineEmits } from 'vue';
+
+interface Correction {
+  id: number;
+  oldValue: number;
+  newValue: number;
+}
 
 const props = defineProps({
   corrections: {
-    type: Array,
+    type: Array as () => Correction[],
     required: true
   },
   isLoading: {
@@ -108,14 +114,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'apply']);
 
-const selectedCorrections = ref([]);
+const selectedCorrections = ref<number[]>([]);
 
 const applySelectedCorrections = () => {
   emit('apply', selectedCorrections.value);
 };
 
 // Formatierung für Währungswerte
-const formatCurrency = (value) => {
+const formatCurrency = (value: number) => {
   // Formatiere als Tausend Euro (T€)
   const valueInThousands = value / 1000;
   return new Intl.NumberFormat('de-DE', { 
@@ -127,11 +133,17 @@ const formatCurrency = (value) => {
 };
 
 // Bestimme die Farbe basierend auf dem Status
-const getStatusColor = (oldValue, newValue) => {
+const getStatusColor = (oldValue: number, newValue: number) => {
   // Wenn die Werte unterschiedlich sind, zeige Rot an
   if (Math.abs(oldValue - newValue) > 0.01) {
     return 'text-red-600';
   }
   return 'text-gray-600';
+};
+</script>
+
+<script lang="ts">
+export default {
+  name: 'CorrectionModal'
 };
 </script> 

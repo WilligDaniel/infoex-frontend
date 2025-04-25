@@ -1,102 +1,124 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useBilanzenStore } from './bilanzen'
 
 export const useDocumentStore = defineStore('document', {
   state: () => ({
-    currentDocument: {
-      id: '',
-      companyName: '',
-      companyId: '',
-      documentType: '',
-      documentMethod: '',
-      totalAssets: 0,
-      totalLiabilities: 0,
-      currency: 'EUR',
-      status: ''
-    },
-    documents: [
-      {
-        id: '1',
-        name: 'Waldeck_PDF2.pdf',
-        company: 'Waldeck GmbH',
-        companyId: 'WD-1',
-        documentType: 'Jahresabschluss',
-        documentMethod: 'Automatisch extrahiert',
-        date: '26.03.2025',
-        totalAssets: 481331.29,
-        totalLiabilities: 481331.29,
-        currency: 'EUR',
-        status: 'In Bearbeitung',
-        type: 'pdf'
-      }
-    ],
+    currentDocument: null,
+    documents: [],
     isLoading: false,
-    error: null
+    error: null,
+    lastUploadedDocument: null,
+    externalData: null
   }),
   
+  getters: {
+    documentIds: (state) => {
+      return state.documents.map(doc => doc.id)
+    },
+    hasDocuments: (state) => {
+      return state.documents.length > 0
+    },
+    getDocumentById: (state) => (id) => {
+      return state.documents.find(doc => doc.id === id)
+    },
+    getExternalData: (state) => {
+      return state.externalData
+    }
+  },
+  
   actions: {
-    loadDocument(id) {
-      console.log('Loading document with ID:', id);
-      
-      if (!id) {
-        console.error('No document ID provided');
-        return null;
-      }
-      
-      const document = this.documents.find(doc => doc.id === id);
-      
-      if (document) {
-        this.currentDocument = document;
-        return document;
-      } else {
-        console.error('Document not found with ID:', id);
-        this.currentDocument = {
-          id: id,
-          companyName: 'Unbekannt',
-          companyId: 'ID-' + id,
-          documentType: 'Unbekannt',
-          documentMethod: 'Unbekannt',
-          totalAssets: 0,
-          totalLiabilities: 0,
-          currency: 'EUR',
-          status: 'Unbekannt'
-        };
-        return this.currentDocument;
+    async loadDocument(id) {
+      this.isLoading = true
+      try {
+        // Simulate API call to fetch document
+        const response = await fetch(`/api/documents/${id}`)
+        if (!response.ok) {
+          throw new Error('Failed to load document')
+        }
+        
+        const document = await response.json()
+        this.currentDocument = document
+        this.isLoading = false
+        return document
+      } catch (error) {
+        console.error('Error loading document:', error)
+        this.error = error.message
+        this.isLoading = false
+        throw error
       }
     },
     
     resetCurrentDocument() {
-      this.currentDocument = {
-        id: '',
-        companyName: '',
-        companyId: '',
-        documentType: '',
-        documentMethod: '',
-        totalAssets: 0,
-        totalLiabilities: 0,
-        currency: 'EUR',
-        status: ''
-      };
+      this.currentDocument = null
     },
 
-    addXLSFile(personalNumber) {
-      const entry = {
-        id: Date.now().toString(),
-        name: `Waldeck_XLS_EXPORT_${personalNumber}.xls`,
-        company: 'Waldeck GmbH',
-        documentType: 'XLS Export',
-        date: new Date().toLocaleDateString('de-DE'),
-        status: 'Verarbeitet',
-        type: 'xls'
-      };
+    addXLSFile(file) {
+      // Add the file to documents array
+      const newDocument = {
+        id: `doc_${Date.now()}`,
+        name: file.name,
+        type: 'xls',
+        createdAt: new Date().toISOString(),
+        status: 'Processing',
+        size: file.size,
+        content: null
+      }
       
-      // Add to beginning of documents array
-      this.documents.unshift(entry);
+      this.documents.push(newDocument)
+      this.lastUploadedDocument = newDocument
+      
+      // In a real app, you'd upload this file to the server
+      // and then process it
+      
+      return newDocument
     },
 
     addDocument(document) {
-      // Add to beginning of documents array
-      this.documents.unshift(document);
+      if (!document.id) {
+        document.id = `doc_${Date.now()}`
+      }
+      
+      if (!document.createdAt) {
+        document.createdAt = new Date().toISOString()
+      }
+      
+      this.documents.push(document)
+      return document
+    },
+    
+    loadExternalJsonData(jsonData) {
+      // Store the raw external data
+      this.externalData = jsonData
+      
+      // Process the document
+      const documentData = {
+        id: `ext_${Date.now()}`,
+        name: jsonData.Name || 'External Document',
+        type: 'json',
+        createdAt: new Date().toISOString(),
+        status: 'Processed',
+        content: jsonData
+      }
+      
+      // Add to documents collection
+      this.addDocument(documentData)
+      
+      // Set as current document
+      this.currentDocument = documentData
+      
+      // Load the data into the bilanzen store
+      const bilanzenStore = useBilanzenStore()
+      bilanzenStore.loadBilanzData(jsonData)
+      
+      return documentData
+    },
+    
+    getSessionDataFromExternalJson() {
+      if (!this.externalData) return null
+      
+      const bilanzenStore = useBilanzenStore()
+      return bilanzenStore.sessionData
     }
   }
 }) 

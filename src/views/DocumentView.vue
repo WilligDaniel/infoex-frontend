@@ -18,12 +18,20 @@
       </div>
 
       <div v-else class="bg-white p-6 shadow">
+        <!-- Comment out Session Data Info here -->
+        <!-- 
+        <SessionDataInfo v-if="bilanzenStore.sessionData && bilanzenStore.sessionData.SessionId" />
+        -->
+
         <!-- Header mit PDF-Vorschau und Dokumentinfo -->
         <div class="flex flex-col md:flex-row mb-6 relative">
           <div class="md:w-2/3">
             <div class="flex justify-between mb-4">
               <h1 class="text-2xl font-medium mb-4">
-                {{ currentDocument.companyName }} (WD-{{ currentDocument.companyId || 'Keine ID' }})
+                {{ bilanzenStore.sessionData?.Name || currentDocument.companyName || 'Unbekannt' }}
+                <span v-if="bilanzenStore.sessionData?.Einheitennummer || currentDocument.companyId">
+                  ({{ bilanzenStore.sessionData?.Einheitennummer || currentDocument.companyId }})
+                </span>
               </h1>
               <div class="flex space-x-2 relative">
                 <!-- Dokument speichern Button nur im Bearbeitungsmodus anzeigen -->
@@ -67,19 +75,20 @@
               </span>
             </div>
 
+            <!-- Info boxes section -->
             <div class="grid grid-cols-4 gap-3">
               <div class="info-box bg-[#D9D9D9]">
                 <p class="info-box-label">KUNDENINFORMATION</p>
-                <p class="info-box-value">{{ currentDocument.documentType || 'Jahresabschluss' }}</p>
-                <p class="text-sm text-gray-700">{{ currentDocument.documentMethod || 'Automatisch extrahiert' }}</p>
+                <p class="info-box-value">{{ bilanzenStore.sessionData?.Abschlussersteller || currentDocument.documentType || 'Jahresabschluss' }}</p>
+                <p class="text-sm text-gray-700">{{ bilanzenStore.sessionData?.Abschlussjahr || currentDocument.documentMethod || 'Automatisch extrahiert' }}</p>
               </div>
               <div class="info-box bg-[#D9D9D9]">
                 <p class="info-box-label">Σ AKTIVA</p>
-                <p class="info-box-value">{{ formatCurrency(currentDocument.totalAssets || 0) }}</p>
+                <p class="info-box-value">{{ formatCurrency(bilanzenStore.bilanzData?.Aktiva?.find(item => item.isSum && String(item.number).indexOf('.') === -1)?.ratingValue || 0) }}</p>
               </div>
               <div class="info-box bg-[#D9D9D9]">
                 <p class="info-box-label">Σ PASSIVA</p>
-                <p class="info-box-value">{{ formatCurrency(currentDocument.totalLiabilities || 0) }}</p>
+                <p class="info-box-value">{{ formatCurrency(bilanzenStore.bilanzData?.Passiva?.find(item => item.isSum && String(item.number).indexOf('.') === -1)?.ratingValue || 0) }}</p>
               </div>
               <div class="info-box bg-[#D9D9D9]">
                 <p class="info-box-label">in</p>
@@ -223,7 +232,7 @@
         </div>
 
         <!-- Tabs -->
-        <div class="mb-6">
+        <div class="mb-2">
           <div class="flex border-b border-gray-300">
             <button 
               @click="currentTab = 'assets'"
@@ -252,7 +261,7 @@
         </div>
 
         <!-- Korrekturen anzeigen Button -->
-        <div class="mb-4 flex justify-end">
+        <div class="mb-2 flex justify-end">
           <button 
             @click="toggleCorrections" 
             class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
@@ -265,357 +274,184 @@
         </div>
 
         <!-- Table Header -->
-        <div class="flex border-b border-gray-300 mb-1">
-          <div class="w-1/12 p-2 font-medium">Nummer</div>
-          <div class="w-5/12 p-2 font-medium">Bilanzposition</div>
-          <div class="w-2/12 p-2 text-right font-medium">Kundenbilanz</div>
-          <div class="w-2/12 p-2 text-right font-medium">Bilanz für Rating</div>
-          <div class="w-2/12 p-2 text-right font-medium">Vorjahreswert</div>
-          <div v-if="showCorrections" class="w-2/12 p-2 text-right font-medium">Korrekturen</div>
+        <div class="flex bg-[#F4F4F4] border-b border-gray-300 mb-1">
+          <div :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 font-medium text-left">Nummer</div>
+          <div :class="showCorrections ? 'w-[30%]' : 'w-[35%]'" class="px-4 py-2 font-medium text-left">Position</div>
+          <div :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" class="px-4 py-2 font-medium text-right">Wert</div>
+          <div v-if="showCorrections" class="w-[15%] px-4 py-2 font-medium text-right">Korrekturen</div>
+          <div :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" class="px-4 py-2 font-medium text-right">Bilanz für Rating</div>
+          <div :class="showCorrections ? 'w-[15%]' : 'w-[15%]'" class="px-4 py-2 font-medium text-right">Vorjahreswert</div>
+          <div class="w-[10%] px-4 py-2 text-center font-medium">Aktionen</div>
         </div>
 
-        <!-- Table Content - Aktiva -->
-        <div v-if="currentTab === 'assets'">
-          <div 
-            v-for="item in assets" 
-            :key="item.id"
-            class="mb-1 relative"
-          >
-            <!-- Farbige Indikatorlinie links -->
-            <div 
-              v-if="item.hasError" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"
-            ></div>
-            <div 
-              v-else-if="item.hasWarning" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-[#E47120]"
-            ></div>
-            <div 
-              v-else-if="item.number.includes('.')" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-[#3A73B8]"
-            ></div>
-            
-            <!-- Zeile mit separaten Zellen -->
-            <div class="flex">
-              <!-- Nummer -->
-              <div 
-                class="w-1/12 p-2 border border-gray-200 relative" 
-                :class="getRowClass(item)"
-              >
-                <span class="pl-2">{{ item.number }}</span>
-                <!-- Notiz-Indikator -->
-                <div v-if="item.notes && item.notes.length > 0" 
-                  class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"
-                  title="Diese Position hat Bemerkungen"
-                ></div>
-              </div>
-              
-              <!-- Bilanzposition -->
-              <div 
-                class="w-5/12 p-2 border-t border-b border-r border-gray-200 flex justify-between items-center" 
-                :class="getRowClass(item)"
-              >
-                <span class="uppercase">{{ item.position }}</span>
-                <!-- Notiz-Button -->
-                <button
-                  @click="openNotesDialog(item, 'Aktiva')"
-                  class="ml-2 p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                  :class="{ 'text-blue-600': item.notes && item.notes.length > 0 }"
-                  title="Bemerkungen anzeigen/bearbeiten"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                </button>
-              </div>
-              
-              <!-- Kundenbilanz -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item), 
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'customerValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.customerValue < 0 }">
-                  {{ formatCurrency(item.customerValue) }}
-                </span>
-              </div>
-              
-              <!-- Bilanz für Rating -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item),
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'ratingValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.ratingValue < 0 }">
-                  {{ formatCurrency(item.ratingValue) }}
-                </span>
-              </div>
-              
-              <!-- Vorjahreswert -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200" 
-                :class="getRowClass(item)"
-              >
-                <span :class="{ 'text-red-600': item.previousValue < 0 }">
-                  {{ formatCurrency(item.previousValue) }}
-                </span>
-              </div>
+        <!-- Table Content -->
+        <template v-if="currentTab === 'assets'">
+          <table class="min-w-full">
+            <tbody>
+              <tr v-for="item in assets" 
+                  :key="item.id" 
+                  :class="{'bg-[#D9D9D9]': item.isSum, 'bg-[#F4F4F4]': !item.isSum}"
+                  v-show="editMode || (!editMode && (Number(item.ratingValue) !== 0 || item.isSum))"
+                  class="border-b border-gray-200">
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-sm text-left">{{ String(item.number) }}</td>
+                <td :class="[
+                    showCorrections ? 'w-[30%]' : 'w-[35%]',
+                    'px-4 py-2 text-sm text-left',
+                    String(item.position).length > 50 ? 'whitespace-normal break-words' : 'whitespace-nowrap'
+                  ]">
+                  {{ item.position }}
+                </td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'customerValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.customerValue) || 0) }}</td>
+                <td v-if="showCorrections" 
+                    class="w-[15%] px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'correction', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.correction) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'ratingValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.ratingValue) || Number(item.customerValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[15%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'previousValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.previousValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-center">
+                  <div class="flex justify-center space-x-2">
+                    <button @click="openNotePopup(item, currentTab === 'assets' ? 'Aktiva' : currentTab === 'liabilities' ? 'Passiva' : 'GuV')" class="text-gray-500 hover:text-gray-700" title="Notizen">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg>
+                    </button>
+                    <span class="text-gray-300">|</span>
+                    <button class="text-gray-500 hover:text-gray-700" title="Details">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
 
-              <!-- Korrekturen Spalte -->
-              <div 
-                v-if="showCorrections"
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative shadow-md -mt-1 bg-white" 
-                :class="[
-                  getRowClass(item),
-                  'cursor-text hover:bg-blue-50'
-                ]"
-                :contenteditable="true"
-                @focus="handleCellFocus($event)"
-                @blur="updateCorrection(item, $event)"
-              >
-                <span :class="{ 'text-red-600': (item.correction || 0) < 0 }">
-                  {{ formatCurrency(item.correction || 0) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <template v-if="currentTab === 'liabilities'">
+          <table class="min-w-full">
+            <tbody>
+              <tr v-for="item in liabilities" 
+                  :key="item.id" 
+                  :class="{'bg-[#D9D9D9]': item.isSum, 'bg-[#F4F4F4]': !item.isSum}"
+                  v-show="editMode || (!editMode && (Number(item.ratingValue) !== 0 || item.isSum))"
+                  class="border-b border-gray-200">
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-sm text-left">{{ String(item.number) }}</td>
+                <td :class="[
+                    showCorrections ? 'w-[30%]' : 'w-[35%]',
+                    'px-4 py-2 text-sm text-left',
+                    String(item.position).length > 50 ? 'whitespace-normal break-words' : 'whitespace-nowrap'
+                  ]">
+                  {{ item.position }}
+                </td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'customerValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.customerValue) || 0) }}</td>
+                <td v-if="showCorrections" 
+                    class="w-[15%] px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'correction', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.correction) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'ratingValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.ratingValue) || Number(item.customerValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[15%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'previousValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.previousValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-center">
+                  <div class="flex justify-center space-x-2">
+                    <button @click="openNotePopup(item, currentTab === 'assets' ? 'Aktiva' : currentTab === 'liabilities' ? 'Passiva' : 'GuV')" class="text-gray-500 hover:text-gray-700" title="Notizen">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg>
+                    </button>
+                    <span class="text-gray-300">|</span>
+                    <button class="text-gray-500 hover:text-gray-700" title="Details">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
 
-        <!-- Table Content - Passiva -->
-        <div v-if="currentTab === 'liabilities'">
-          <div 
-            v-for="item in liabilities" 
-            :key="item.id"
-            class="mb-1 relative"
-          >
-            <!-- Farbige Indikatorlinie links -->
-            <div 
-              v-if="item.hasError" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"
-            ></div>
-            <div 
-              v-else-if="item.hasWarning" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-[#E47120]"
-            ></div>
-            <div 
-              v-else-if="item.number.includes('.')" 
-              class="absolute left-0 top-0 bottom-0 w-1 bg-[#3A73B8]"
-            ></div>
-            
-            <!-- Zeile mit separaten Zellen -->
-            <div class="flex">
-              <!-- Nummer -->
-              <div 
-                class="w-1/12 p-2 border border-gray-200 relative" 
-                :class="getRowClass(item)"
-              >
-                <span class="pl-2">{{ item.number }}</span>
-                <!-- Notiz-Indikator -->
-                <div v-if="item.notes && item.notes.length > 0" 
-                  class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"
-                  title="Diese Position hat Bemerkungen"
-                ></div>
-              </div>
-              
-              <!-- Bilanzposition -->
-              <div 
-                class="w-5/12 p-2 border-t border-b border-r border-gray-200 flex justify-between items-center" 
-                :class="getRowClass(item)"
-              >
-                <span class="uppercase">{{ item.position }}</span>
-                <!-- Notiz-Button -->
-                <button
-                  @click="openNotesDialog(item, 'Passiva')"
-                  class="ml-2 p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                  :class="{ 'text-blue-600': item.notes && item.notes.length > 0 }"
-                  title="Bemerkungen anzeigen/bearbeiten"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                </button>
-              </div>
-              
-              <!-- Kundenbilanz -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item), 
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'customerValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.customerValue < 0 }">
-                  {{ formatCurrency(item.customerValue) }}
-                </span>
-              </div>
-              
-              <!-- Bilanz für Rating -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item),
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'ratingValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.ratingValue < 0 }">
-                  {{ formatCurrency(item.ratingValue) }}
-                </span>
-              </div>
-              
-              <!-- Vorjahreswert -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200" 
-                :class="getRowClass(item)"
-              >
-                <span :class="{ 'text-red-600': item.previousValue < 0 }">
-                  {{ formatCurrency(item.previousValue) }}
-                </span>
-              </div>
-
-              <!-- Korrekturen Spalte -->
-              <div 
-                v-if="showCorrections"
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative shadow-md -mt-1 bg-white" 
-                :class="[
-                  getRowClass(item),
-                  'cursor-text hover:bg-blue-50'
-                ]"
-                :contenteditable="true"
-                @focus="handleCellFocus($event)"
-                @blur="updateCorrection(item, $event)"
-              >
-                <span :class="{ 'text-red-600': (item.correction || 0) < 0 }">
-                  {{ formatCurrency(item.correction || 0) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table Content - GuV -->
-        <div v-if="currentTab === 'income'">
-          <div 
-            v-for="item in incomeStatement" 
-            :key="item.id"
-            class="mb-1 relative"
-          >
-            <!-- Zeile mit separaten Zellen -->
-            <div class="flex">
-              <!-- Nummer -->
-              <div 
-                class="w-1/12 p-2 border border-gray-200 relative" 
-                :class="getRowClass(item)"
-              >
-                <span class="pl-2">{{ item.number }}</span>
-                <!-- Notiz-Indikator -->
-                <div v-if="item.notes && item.notes.length > 0" 
-                  class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"
-                  title="Diese Position hat Bemerkungen"
-                ></div>
-              </div>
-              
-              <!-- Bilanzposition -->
-              <div 
-                class="w-4/12 p-2 border-t border-b border-r border-gray-200 flex justify-between items-center" 
-                :class="getRowClass(item)"
-              >
-                <span class="uppercase">{{ item.position }}</span>
-                <!-- Notiz-Button -->
-                <button
-                  @click="openNotesDialog(item, 'GuV')"
-                  class="ml-2 p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                  :class="{ 'text-blue-600': item.notes && item.notes.length > 0 }"
-                  title="Bemerkungen anzeigen/bearbeiten"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                </button>
-              </div>
-              
-              <!-- Kundenbilanz -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item), 
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'customerValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.customerValue < 0 }">
-                  {{ formatCurrency(item.customerValue) }}
-                </span>
-              </div>
-              
-              <!-- Bilanz für Rating -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative" 
-                :class="[
-                  getRowClass(item),
-                  item.customerValue !== item.ratingValue ? 'bg-red-100 bg-opacity-30' : '',
-                  (editMode || showCorrections) ? 'cursor-text hover:bg-blue-50' : ''
-                ]"
-                :contenteditable="editMode || showCorrections"
-                @focus="handleCellFocus($event)"
-                @blur="updateValue(item, 'ratingValue', $event)"
-              >
-                <span :class="{ 'text-red-600': item.ratingValue < 0 }">
-                  {{ formatCurrency(item.ratingValue) }}
-                </span>
-              </div>
-              
-              <!-- Vorjahreswert -->
-              <div 
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200" 
-                :class="getRowClass(item)"
-              >
-                <span :class="{ 'text-red-600': item.previousValue < 0 }">
-                  {{ formatCurrency(item.previousValue) }}
-                </span>
-              </div>
-
-              <!-- Korrekturen Spalte -->
-              <div 
-                v-if="showCorrections"
-                class="w-2/12 p-2 text-right border-t border-b border-r border-gray-200 relative shadow-md -mt-1 bg-white" 
-                :class="[
-                  getRowClass(item),
-                  'cursor-text hover:bg-blue-50'
-                ]"
-                :contenteditable="true"
-                @focus="handleCellFocus($event)"
-                @blur="updateCorrection(item, $event)"
-              >
-                <span :class="{ 'text-red-600': (item.correction || 0) < 0 }">
-                  {{ formatCurrency(item.correction || 0) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <template v-if="currentTab === 'income'">
+          <table class="min-w-full">
+            <tbody>
+              <tr v-for="item in incomeStatement" 
+                  :key="item.id" 
+                  :class="{'bg-[#D9D9D9]': item.isSum, 'bg-[#F4F4F4]': !item.isSum}"
+                  v-show="editMode || (!editMode && (Number(item.ratingValue) !== 0 || item.isSum))"
+                  class="border-b border-gray-200">
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-sm text-left">{{ String(item.number) }}</td>
+                <td :class="[
+                    showCorrections ? 'w-[30%]' : 'w-[35%]',
+                    'px-4 py-2 text-sm text-left',
+                    String(item.position).length > 50 ? 'whitespace-normal break-words' : 'whitespace-nowrap'
+                  ]">
+                  {{ item.position }}
+                </td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'customerValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.customerValue) || 0) }}</td>
+                <td v-if="showCorrections" 
+                    class="w-[15%] px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'correction', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.correction) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[20%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'ratingValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.ratingValue) || Number(item.customerValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[15%]' : 'w-[15%]'" 
+                    class="px-4 py-2 text-sm text-right"
+                    :contenteditable="editMode"
+                    @blur="updateValue(item, 'previousValue', $event)"
+                    @focus="handleCellFocus($event)">{{ formatCurrency(Number(item.previousValue) || 0) }}</td>
+                <td :class="showCorrections ? 'w-[10%]' : 'w-[10%]'" class="px-4 py-2 text-center">
+                  <div class="flex justify-center space-x-2">
+                    <button @click="openNotePopup(item, currentTab === 'assets' ? 'Aktiva' : currentTab === 'liabilities' ? 'Passiva' : 'GuV')" class="text-gray-500 hover:text-gray-700" title="Notizen">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg>
+                    </button>
+                    <span class="text-gray-300">|</span>
+                    <button class="text-gray-500 hover:text-gray-700" title="Details">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
       </div>
 
       <!-- Correction Modal -->
@@ -634,7 +470,8 @@
           </div>
           
           <div class="p-4 overflow-auto flex-grow">
-            <p class="mb-4 text-gray-600">
+            <!-- Remove the button from here -->
+            <p class="text-gray-600 mb-4">
               Folgende Korrekturen wurden für die Bilanz erkannt. Wählen Sie die Korrekturen aus, die angewendet werden sollen.
             </p>
             
@@ -683,20 +520,31 @@
             </div>
           </div>
           
-          <div class="p-4 border-t border-gray-200 flex justify-end space-x-3">
+          <div class="p-4 border-t border-gray-200 flex justify-between space-x-3">
+            <!-- Update the text here -->
             <button 
-              @click="showCorrectionModal = false" 
-              class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              @click="toggleAllCorrections"
+              class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
             >
-              Abbrechen
+              {{ areAllCorrectionsSelected ? 'Alles abwählen' : 'Alles auswählen' }}
             </button>
-            <button 
-              @click="applySelectedCorrections" 
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
-              :disabled="!hasSelectedCorrections"
-            >
-              Ausgewählte Korrekturen anwenden
-            </button>
+            
+            <!-- Right aligned buttons -->
+            <div class="flex space-x-3">
+              <button 
+                @click="showCorrectionModal = false" 
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button 
+                @click="applySelectedCorrections" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                :disabled="!hasSelectedCorrections"
+              >
+                Ausgewählte Korrekturen anwenden
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -710,49 +558,6 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
         {{ feedbackMessage }}
-      </div>
-
-      <!-- Pop-up Dialog für Personen-/Einheitennummer -->
-      <div v-if="showNumberDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-          <h3 class="text-lg font-medium mb-4">Personen-/Einheitennummer eingeben</h3>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Bitte geben Sie die Personen- oder Einheitennummer ein
-            </label>
-            <input 
-              type="text" 
-              v-model="identifierNumber"
-              maxlength="10"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="z.B. 12345 oder AB123"
-              @input="validateIdentifier"
-            >
-            <p class="mt-1 text-sm text-gray-500">
-              Personennummer: nur Zahlen<br>
-              Einheitennummer: Buchstaben und Zahlen<br>
-              Maximal 10 Stellen
-            </p>
-            <p v-if="identifierError" class="mt-1 text-sm text-red-600">
-              {{ identifierError }}
-            </p>
-          </div>
-          <div class="flex justify-end space-x-3">
-            <button 
-              @click="cancelIdentifierInput"
-              class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Abbrechen
-            </button>
-            <button 
-              @click="confirmIdentifierInput"
-              class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              :disabled="!isValidIdentifier"
-            >
-              Bestätigen
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Notes Dialog -->
@@ -826,13 +631,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted, nextTick } from 'vue';
 import { useDocumentStore } from '../stores/document';
 import { useBilanzenStore } from '../stores/bilanzen';
 import { useRoute, useRouter } from 'vue-router';
-import CorrectionModal from '../components/CorrectionModal.vue';
-import BreadcrumbNav from '../components/BreadcrumbNav.vue';
+import CorrectionModal from '@/components/CorrectionModal.vue';
+import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
+import SessionDataInfo from '@/components/SessionDataInfo.vue';
 
 const props = defineProps({
   id: {
@@ -854,7 +660,9 @@ const bilanzenStore = useBilanzenStore();
 const showCorrections = ref(false);
 const showCorrectionModal = ref(false);
 const currentTab = ref('assets');
-const isLoading = ref(true);
+const isLoading = ref(false);
+const showError = ref(false);
+const errorMessage = ref('');
 const corrections = ref([]);
 const zoomLevel = ref(1.0); // Starte mit 100% Zoom
 const pdfContainer = ref(null);
@@ -865,7 +673,9 @@ const feedbackMessage = ref('');
 
 // Neue Variablen für das Pop-up
 const showNumberDialog = ref(false);
-const identifierNumber = ref('');
+const personalNumber = ref('');
+const unitNumber = ref('');
+const businessSector = ref('');
 const identifierError = ref('');
 const isValidIdentifier = ref(false);
 
@@ -1121,47 +931,41 @@ const navigateToDocument = (id) => {
 const loadDocument = async () => {
   isLoading.value = true;
   
-  console.log('Loading document with ID:', documentId.value);
-  
   try {
-    if (documentId.value) {
-      // Simuliere das Laden eines Dokuments
-      setTimeout(() => {
-        // Setze das aktuelle Dokument manuell
-        documentStore.$patch({
-          currentDocument: {
-            id: documentId.value,
-            companyName: 'Waldeck GmbH',
-            companyId: documentId.value, // Verwende die ID direkt ohne WD- Präfix
-            documentType: 'Jahresabschluss',
-            documentMethod: 'Automatisch extrahiert',
-            totalAssets: 481331.29,
-            totalLiabilities: 481331.29,
-            currency: 'EUR',
-            status: 'In Bearbeitung'
-          }
-        });
-        
-        // Lade die Bilanzdaten
-        bilanzenStore.loadBilanzData();
-        
-        // Lade die Korrekturen
-        corrections.value = bilanzenStore.getCorrections();
-        
-        isLoading.value = false;
-        
-        // Im Bearbeitungsmodus automatisch Korrekturen anzeigen
-        if (props.editMode) {
-          showCorrections.value = true;
-        }
-      }, 500);
-    } else {
-      console.error('Keine Dokument-ID vorhanden');
-      isLoading.value = false;
+    if (!documentId.value) {
+      throw new Error('No document ID provided');
     }
-  } catch (error) {
-    console.error('Fehler beim Laden des Dokuments:', error);
+
+    // Update the store patch to use the state mutator function
+    documentStore.$patch((state) => {
+      state.currentDocument = {
+        id: documentId.value,
+        companyName: bilanzenStore.sessionData?.Name || 'Unknown',
+        companyId: bilanzenStore.sessionData?.Einheitennummer || documentId.value,
+        documentType: 'Annual Financial Statement',
+        documentMethod: 'Automatically extracted',
+        totalAssets: 0,
+        totalLiabilities: 0,
+        currency: 'EUR',
+        status: 'In Progress'
+      };
+    });
+    
+    // Rest of the function remains the same
+    if (bilanzenStore.bilanzData) {
+      console.log('Balance data loaded:', bilanzenStore.bilanzData);
+    }
+    
+    if (props.editMode) {
+      showCorrections.value = true;
+    }
+    
     isLoading.value = false;
+  } catch (error) {
+    console.error('Error loading document:', error);
+    isLoading.value = false;
+    showError.value = true;
+    errorMessage.value = error.message || 'Failed to load document';
   }
 };
 
@@ -1240,20 +1044,22 @@ const recalculateSums = (section) => {
   // Berechne die Summen basierend auf den Unterposten
   sumRows.forEach(sumRow => {
     // Finde alle Unterposten dieser Summenzeile
-    const childItems = data.filter(item => 
-      item.number.startsWith(sumRow.number.split('.')[0]) && 
-      item.number.includes('.') && 
-      !item.isSum
-    );
+    const childItems = data.filter(item => {
+      const itemNumber = String(item.number);
+      const sumRowNumber = String(sumRow.number);
+      return itemNumber.startsWith(sumRowNumber.split('.')[0]) && 
+             itemNumber.includes('.') && 
+             !item.isSum;
+    });
     
     // Berechne die Summe der Kundenbilanz
-    sumRow.customerValue = childItems.reduce((sum, item) => sum + item.customerValue, 0);
+    sumRow.customerValue = childItems.reduce((sum, item) => sum + (Number(item.customerValue) || 0), 0);
     
     // Berechne die Summe der Rating-Bilanz
-    sumRow.ratingValue = childItems.reduce((sum, item) => sum + item.ratingValue, 0);
+    sumRow.ratingValue = childItems.reduce((sum, item) => sum + (Number(item.ratingValue) || 0), 0);
     
     // Berechne die Summe der Vorjahreswerte
-    sumRow.previousValue = childItems.reduce((sum, item) => sum + item.previousValue, 0);
+    sumRow.previousValue = childItems.reduce((sum, item) => sum + (Number(item.previousValue) || 0), 0);
     
     console.log(`Summe für ${sumRow.position} neu berechnet: ${sumRow.customerValue}`);
   });
@@ -1450,7 +1256,7 @@ const updateCorrection = (item, event) => {
 
 // Validierung der Eingabe
 const validateIdentifier = () => {
-  const value = identifierNumber.value;
+  const value = personalNumber.value + unitNumber.value + businessSector.value;
   
   if (!value) {
     identifierError.value = 'Bitte geben Sie eine Nummer ein.';
@@ -1484,19 +1290,30 @@ const validateIdentifier = () => {
 
 // Bestätigung der Eingabe
 const confirmIdentifierInput = () => {
-  if (isValidIdentifier.value) {
+  if (personalNumber.value || unitNumber.value || businessSector.value) {
+    // Use any of the non-empty values as identifier
+    const identifier = personalNumber.value || unitNumber.value || businessSector.value;
     showNumberDialog.value = false;
-    // Hier würde in einer echten Implementierung die Nummer gespeichert werden
-    console.log('Identifier saved:', identifierNumber.value);
+    // Here you would handle the processing with the identifier
+    console.log('Processing with identifier:', identifier);
+    console.log('All values:', {
+      personalNumber: personalNumber.value,
+      unitNumber: unitNumber.value,
+      businessSector: businessSector.value
+    });
+    // Reset the values after successful processing
+    personalNumber.value = '';
+    unitNumber.value = '';
+    businessSector.value = '';
   }
 };
 
 // Abbruch der Eingabe
 const cancelIdentifierInput = () => {
   showNumberDialog.value = false;
-  identifierNumber.value = '';
-  identifierError.value = '';
-  isValidIdentifier.value = false;
+  personalNumber.value = '';
+  unitNumber.value = '';
+  businessSector.value = '';
 };
 
 // Pop-up nach dem Hochladen anzeigen
@@ -1581,6 +1398,82 @@ const viewKPI = () => {
     router.push(`/bilanz/${documentId.value}/kpi`);
   }, 1500);
 };
+
+// Open notes dialog for a specific item
+const openNotePopup = (item, section) => {
+  selectedItem.value = item;
+  selectedSection.value = section;
+  showNotesDialog.value = true;
+  newNote.value = '';
+};
+
+// Add to script setup section:
+const showProcessingDialog = ref(false);
+
+// Add these methods:
+const startProcessing = () => {
+  console.log('Starting processing...');
+  // Add your processing logic here
+};
+
+const cancelProcessing = () => {
+  showProcessingDialog.value = false;
+  personalNumber.value = '';
+  unitNumber.value = '';
+  businessSector.value = '';
+};
+
+const confirmProcessing = () => {
+  if (personalNumber.value || unitNumber.value || businessSector.value) {
+    // Use any of the non-empty values as identifier
+    const identifier = personalNumber.value || unitNumber.value || businessSector.value;
+    showProcessingDialog.value = false;
+    // Here you would handle the processing with the identifier
+    console.log('Processing with identifier:', identifier);
+    console.log('All values:', {
+      personalNumber: personalNumber.value,
+      unitNumber: unitNumber.value,
+      businessSector: businessSector.value
+    });
+    // Reset the values
+    personalNumber.value = '';
+    unitNumber.value = '';
+    businessSector.value = '';
+  }
+};
+
+// Add to script setup section:
+const areAllCorrectionsSelected = ref(false);
+
+// Add to script setup section:
+const toggleAllCorrections = () => {
+  areAllCorrectionsSelected.value = !areAllCorrectionsSelected.value;
+  mockCorrections.value.forEach(correction => {
+    correction.selected = areAllCorrectionsSelected.value;
+  });
+};
+
+const appliedCorrection = ref(null)
+
+const appliedCorrections = ref([]);
+
+const updateCurrentDocument = () => {
+  if (bilanzenStore.sessionData && bilanzenStore.bilanzData) {
+    documentStore.$patch((state) => {
+      state.currentDocument = {
+        id: route.params.id as string,
+        companyName: bilanzenStore.sessionData.Name,
+        companyId: bilanzenStore.sessionData.SessionId,
+        documentType: 'Bilanz',
+        documentMethod: 'Manual',
+        totalAssets: bilanzenStore.bilanzData.Aktiva?.find(item => item.isSum && !item.number.includes('.'))?.ratingValue || 0,
+        totalLiabilities: bilanzenStore.bilanzData.Passiva?.find(item => item.isSum && !item.number.includes('.'))?.ratingValue || 0,
+        currency: 'EUR',
+        status: 'In Progress'
+      };
+    });
+  }
+};
 </script>
 
 <style scoped>
@@ -1588,81 +1481,151 @@ const viewKPI = () => {
   font-family: "Frutiger Std", sans-serif;
 }
 
-/* Standardfarbe für normale Zeilen */
+/* Table styles */
+table {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Cell alignment */
+.text-left {
+  text-align: left !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+/* Row backgrounds and borders */
+.border-b {
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
 .bg-\[\#F4F4F4\] {
-  background-color: #F4F4F4;
+  background-color: #F4F4F4 !important;
 }
 
-/* Summenzeilen */
 .bg-\[\#D9D9D9\] {
-  background-color: #D9D9D9;
+  background-color: #D9D9D9 !important;
 }
 
-/* Fehler in Summenregeln */
-.bg-\[\#FBD2D2\] {
-  background-color: #FBD2D2;
+/* Cell padding and spacing */
+td {
+  padding: 0.75rem 1rem !important;
+  line-height: 1.25 !important;
 }
 
-/* Korrektur durchgeführt */
-.bg-\[\#FAE3D2\] {
-  background-color: #FAE3D2;
+/* Table header */
+.font-medium {
+  font-weight: 500 !important;
+  color: #374151 !important;
 }
 
-/* Werte-Formatierung */
-.financial-value {
-  @apply text-right px-4;
+/* Cell text */
+.text-sm {
+  font-size: 0.875rem !important;
+  color: #1F2937 !important;
 }
 
-.financial-value-negative {
-  @apply text-red-600;
+/* Prevent text wrapping */
+.whitespace-nowrap {
+  white-space: nowrap !important;
 }
 
-/* Vertikale blaue Linie für Gruppierung */
-.group-indicator {
-  @apply w-1 h-full bg-[#3A73B8] absolute left-0;
+/* Editable cells */
+[contenteditable="true"] {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 4px;
 }
 
-/* Vertikale rote Linie für Fehler */
-.error-indicator {
-  @apply w-1 h-full bg-red-500 absolute left-0;
+[contenteditable="true"]:hover {
+  background-color: #F3F4F6;
 }
 
-/* Vertikale orange Linie für Warnungen */
-.warning-indicator {
-  @apply w-1 h-full bg-[#E47120] absolute left-0;
+[contenteditable="true"]:focus {
+  outline: 2px solid #3B82F6;
+  background-color: white;
+  cursor: text;
 }
 
-/* Tab Styles */
-.tab-button {
-  @apply outline-none focus:outline-none;
+/* Sum rows */
+tr[data-is-sum="true"] [contenteditable="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-.tab-button.active {
-  @apply z-20;
+/* Negative values */
+.negative-value {
+  color: #DC2626 !important;
 }
 
-.tab-shape {
-  @apply border-b-0 transition-all duration-200;
+/* Table width classes */
+[class*="w-["] {
+  width: var(--width-value) !important;
 }
 
-.tab-button:not(.active) .tab-shape {
-  @apply opacity-90 border-gray-300;
+.w-\[32\%\] {
+  --width-value: 32% !important;
 }
 
-.tab-button:not(.active):hover .tab-shape {
-  @apply opacity-100;
+.w-\[35\%\] {
+  --width-value: 35% !important;
 }
 
-/* Neue Styles für Bemerkungen */
-.note-indicator {
-  @apply absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full;
+.w-\[8\%\] {
+  --width-value: 8% !important;
 }
 
-.note-button {
-  @apply ml-2 p-1 text-gray-500 hover:text-blue-600 transition-colors;
+.w-\[10\%\] {
+  --width-value: 10% !important;
 }
 
-.note-button.has-notes {
-  @apply text-blue-600;
+.w-\[15\%\] {
+  --width-value: 15% !important;
+}
+
+.w-\[20\%\] {
+  --width-value: 20% !important;
+}
+
+/* Force table layout */
+.min-w-full {
+  table-layout: fixed !important;
+}
+
+/* Force cell alignment */
+td[class*="text-right"],
+th[class*="text-right"] {
+  text-align: right !important;
+}
+
+td[class*="text-left"],
+th[class*="text-left"] {
+  text-align: left !important;
+}
+
+td[class*="text-center"],
+th[class*="text-center"] {
+  text-align: center !important;
+}
+
+/* Table container */
+.overflow-x-auto {
+  background-color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Table header background */
+.bg-\[\#F4F4F4\] {
+  background-color: #F8F9FA !important;
+  border-bottom: 2px solid #E5E7EB !important;
 }
 </style> 

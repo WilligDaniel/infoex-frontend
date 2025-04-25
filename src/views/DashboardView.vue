@@ -5,89 +5,82 @@ import { useBilanzenStore } from '@/stores/bilanzen.js';
 import { useDocumentStore } from '@/stores/document.js';
 import { storeToRefs } from 'pinia';
 import BreadcrumbNav from '@/components/BreadcrumbNav.vue';
+// import JsonImportButton from '@/components/JsonImportButton.vue'; // Keep commented out
 
 const router = useRouter();
 const bilanzenStore = useBilanzenStore();
 const documentStore = useDocumentStore();
 const { isLoading, error } = storeToRefs(bilanzenStore);
 
-// Use documents from documentStore instead of local bilanzen ref
-const bilanzen = computed(() => documentStore.documents);
+// --- Base Mock JSON Data String ---
+// Using template literal for easier readability
+const baseMockJsonString = `{
+  "SessionId": "mockSession_${Date.now()}", 
+  "Einheitennummer": "", 
+  "Personenummer": "", 
+  "Branche": "", 
+  "Name": "Generierte Muster-Firma", 
+  "Abschlussjahr": "2024", 
+  "Von": "2023-01-01", 
+  "Bis": "2023-12-31", 
+  "Abschlussersteller": "Muster Steuerberater", 
+  "Rechtsform": "GmbH", 
+  "bilanzData": {
+    "Aktiva": [
+      {"id": "", "number": 11001, "position": "Selbst gesch. Schutz- u. ä. Rechte", "customerValue": 10000, "ratingValue": 10000, "previousValue": 9000, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"id": "", "number": 11022, "position": "Grundstücke und Gebäude", "customerValue": 30190.00, "ratingValue": 30190.00, "previousValue": 33454.00, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"id": "", "number": 11028, "position": "And. Anlagen und BGA", "customerValue": 382836.00, "ratingValue": 382836.00, "previousValue": 325810.00, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"id": "", "number": 11291, "position": "Ford. a. LuL", "customerValue": 324662.25, "ratingValue": 324662.25, "previousValue": 361019.39, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"id": "", "number": 11351, "position": "Scheck, Kasse, Bankguthaben", "customerValue": 41470.75, "ratingValue": 41470.75, "previousValue": 263916.81, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null}
+    ],
+    "Passiva": [
+      {"id": "", "number": 12071, "position": "Gewinnvortrag", "customerValue": 3068497.62, "ratingValue": 3068497.62, "previousValue": 2528465.10, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"id": "", "number": 12214, "position": "Verbindlichkeiten gg. Kreditinstituten", "customerValue": 1282381.63, "ratingValue": 1282381.63, "previousValue": 1338955.44, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null}
+    ],
+    "GuV": [
+      {"tableId": null, "number": "13001", "position": "Umsatzerlöse", "customerValue": 1108067.76, "ratingValue": 1108067.76, "previousValue": 1188926.79, "isSum": false, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null},
+      {"tableId": null, "number": "13011", "position": "Jahresüberschuss", "customerValue": 169490.63, "ratingValue": 169490.63, "previousValue": 153000.0, "isSum": true, "hasError": false, "hasWarning": false, "notes": [], "lastEditDate": null}
+    ]
+  },
+  "Summenregeln": [
+    {"11019": "11001 + 11002 + 11003 + 11005"}
+  ],
+  "Umkontierungen": [],
+  "corrections": []
+}`;
 
-// Tabs state
+// --- Reactive State ---
+const bilanzen = computed(() => documentStore.documents);
 const activeTab = ref('all');
-const uploadedFile = ref('');
-const fileProcessed = ref(false);
+const uploadedFile = ref(''); // Still needed for the file upload simulation button
+const fileProcessed = ref(false); // Keep for potential future use
 const isProcessing = ref(false);
 const showIdentifierDialog = ref(false);
-const isPersonalNumber = ref(true);
 const personalNumber = ref('');
 const unitNumber = ref('');
+const businessSector = ref('');
 const identifierError = ref('');
 
-// Computed properties for filtered documents
+// --- Computed Properties ---
 const filteredBilanzen = computed(() => {
   if (!bilanzen.value) return [];
-  
   switch (activeTab.value) {
-    case 'processed':
-      return bilanzen.value.filter(b => b.status === 'Verarbeitet');
-    case 'errors':
-      return bilanzen.value.filter(b => b.status === 'Fehler');
-    default:
-      return bilanzen.value;
+    case 'processed': return bilanzen.value.filter(b => b.status === 'Verarbeitet');
+    case 'errors': return bilanzen.value.filter(b => b.status === 'Fehler');
+    default: return bilanzen.value;
   }
 });
 
-const setActiveTab = (tab) => {
-  activeTab.value = tab;
-};
+// --- Methods ---
+const setActiveTab = (tab) => { activeTab.value = tab; };
+const getStatusClass = (status) => { /* ... */ };
+const getRowClass = (status) => { /* ... */ };
+const navigateToDocument = (id) => { router.push(`/bilanz/${id}`); };
+const navigateToEdit = (id) => { router.push(`/bilanz/${id}/edit`); };
 
-const getStatusClass = (status) => {
-  const classes = 'px-2 py-1 text-xs rounded-full ';
-  
-  switch (status) {
-    case 'Verarbeitet':
-      return classes + 'bg-green-100 text-green-800';
-    case 'Fehler':
-      return classes + 'bg-red-100 text-red-800';
-    case 'In Bearbeitung':
-      return classes + 'bg-yellow-100 text-yellow-800';
-    default:
-      return classes + 'bg-gray-100 text-gray-800';
-  }
-};
-
-const getRowClass = (status) => {
-  switch (status) {
-    case 'error':
-      return 'data-table-row-error';
-    case 'warning':
-      return 'data-table-row-warning';
-    default:
-      return 'data-table-row';
-  }
-};
-
-const navigateToDocument = (id) => {
-  console.log('Navigating to document view:', id);
-  router.push(`/bilanz/${id}`);
-};
-
-const navigateToEdit = (id) => {
-  console.log('Navigating to document edit:', id);
-  router.push(`/bilanz/${id}/edit`);
-};
-
-const navigateToUpload = () => {
-  router.push('/upload');
-};
-
-const simulateFileUpload = () => {
-  if (!uploadedFile.value) {
-    // Simulieren der Auswahl von PDF2.pdf
-    uploadedFile.value = 'PDF2.pdf';
-  }
+// Simulate file selection (if needed for button styling/logic)
+const simulateFileUpload = () => { 
+  if (!uploadedFile.value) uploadedFile.value = 'MockBilanz.json';
 };
 
 const removeFile = () => {
@@ -95,89 +88,88 @@ const removeFile = () => {
   fileProcessed.value = false;
 };
 
-const validateIdentifier = (value) => {
-  // Check if at least one number is entered
-  return /\d+/.test(value);
-};
-
+// Function called by the "Bilanz verarbeiten" button
 const processFile = () => {
-  isProcessing.value = true;
+  // Simulate file selection if not already done 
+  // (mainly to enable the button, though we won't use the file itself)
+  if (!uploadedFile.value) {
+     simulateFileUpload(); 
+  }
+  // Open the identifier dialog
+  isProcessing.value = true; // Show spinner on button
   showIdentifierDialog.value = true;
 };
 
+// Function called when confirming identifiers in the dialog
 const handleIdentifierSubmit = () => {
-  const number = isPersonalNumber.value ? personalNumber.value : unitNumber.value;
-  
-  if (!number) {
-    identifierError.value = 'Bitte geben Sie eine Nummer ein';
+  // Validate that required fields are filled
+  if (!personalNumber.value || !businessSector.value) {
+    identifierError.value = 'Bitte geben Sie die Personennummer und den Wirtschaftszweig ein.';
+    // Keep spinner running, dialog open
     return;
   }
+  
+  identifierError.value = ''; // Clear error
 
-  // Close dialog and update state
-  showIdentifierDialog.value = false;
-  fileProcessed.value = true;
-  
-  // Create new entry
-  const entry = {
-    id: number, // Use the entered number as ID
-    name: `Waldeck_PDF2.pdf`,
-    company: 'Waldeck GmbH',
-    documentType: 'Bilanz',
-    date: new Date().toLocaleDateString('de-DE'),
-    status: 'Verarbeitet',
-    type: 'pdf'
-  };
-  
-  // Add to bilanzen array
-  documentStore.addDocument(entry);
-  
-  // Process the file (show loading animation)
-  isProcessing.value = true;
-  
-  // Navigate after a delay
-  setTimeout(() => {
-    isProcessing.value = false;
-    router.push(`/bilanz/${entry.id}`);
-  }, 1500);
-};
+  try {
+    // Parse the base mock JSON
+    const mockData = JSON.parse(baseMockJsonString);
 
-// Add function to handle new XLS file
-const addXLSFile = (personalNumber) => {
-  const entry = {
-    id: Date.now(), // Generate unique ID
-    name: `Waldeck_XLS_EXPORT_${personalNumber}.xls`,
-    company: 'Waldeck GmbH',
-    documentType: 'XLS Export',
-    date: new Date().toLocaleDateString('de-DE'),
-    status: 'Verarbeitet',
-    type: 'xls'
-  };
-  
-  // Add to beginning of bilanzen array
-  documentStore.addDocument(entry);
+    // Inject user input into the mock data
+    mockData.Personenummer = personalNumber.value;
+    mockData.Branche = businessSector.value; 
+    if (unitNumber.value) { // Add unit number only if provided
+      mockData.Einheitennummer = unitNumber.value;
+    }
+    // Optionally update name based on input?
+    // mockData.Name = `Firma für PN ${personalNumber.value}`; 
+
+    // Generate a somewhat unique ID based on required inputs
+    const entryId = `${personalNumber.value}-${businessSector.value.replace(/\s+/g, '')}`;
+
+    // Prepare the document entry data for the store
+    const documentEntry = {
+      id: entryId,
+      name: `Mock_Bilanz_${entryId}.json`, 
+      company: mockData.Name, // Use name from (potentially updated) mock data
+      documentType: 'Bilanz (Mock)',
+      date: new Date().toLocaleDateString('de-DE'),
+      status: 'Verarbeitet', // Assume success for mock
+      type: 'json'
+    };
+
+    // Add the document entry first
+    documentStore.addDocument(documentEntry);
+
+    // Now load the actual bilanz data into the bilanzenStore
+    // Use the modified mockData object
+    bilanzenStore.loadBilanzData(mockData);
+
+    // Close dialog and reset processing state
+    closeIdentifierDialog(); // Resets isProcessing
+
+    // Navigate to the new document view
+    router.push(`/bilanz/${entryId}`);
+
+  } catch (e) {
+    console.error('Error processing mock JSON with user input:', e);
+    identifierError.value = 'Fehler beim Verarbeiten der Daten.';
+    isProcessing.value = false; // Stop spinner on error
+    // Keep dialog open on error
+  }
 };
 
 const closeIdentifierDialog = () => {
   showIdentifierDialog.value = false;
-  isProcessing.value = false;
-  personalNumber.value = '';
-  unitNumber.value = '';
-  identifierError.value = '';
+  isProcessing.value = false; // Stop spinner when closing dialog
+  // Don't clear inputs immediately, user might want to correct
+  // personalNumber.value = '';
+  // unitNumber.value = '';
+  // businessSector.value = '';
+  // identifierError.value = ''; // Keep error message if closed on error
 };
 
-const activeNumber = computed({
-  get: () => isPersonalNumber.value ? personalNumber.value : unitNumber.value,
-  set: (value) => {
-    if (isPersonalNumber.value) {
-      personalNumber.value = value;
-    } else {
-      unitNumber.value = value;
-    }
-  }
-});
-
 onMounted(() => {
-  // No need to initialize mock data anymore as we're using the store
   console.log('Dashboard mounted');
 });
 </script>
@@ -186,16 +178,19 @@ onMounted(() => {
   <div class="bg-gray-50 min-h-screen">
     <BreadcrumbNav />
     <div class="container mx-auto px-4 py-6">
+      <!-- 
+      <SessionDataInfo v-if="bilanzenStore.sessionData && bilanzenStore.sessionData.SessionId" /> 
+      -->
       <h1 class="text-2xl font-medium mb-6">Dashboard</h1>
       
       <!-- File Upload Section -->
       <div class="bg-white rounded-lg shadow mb-6">
         <div class="p-4 border-b border-gray-200">
-          <h2 class="text-lg font-medium">Neue Bilanz hochladen</h2>
+          <h2 class="text-lg font-medium">Neue Bilanz verarbeiten</h2>
         </div>
         <div class="p-4">
           <div class="mb-4">
-            <p class="mb-2 text-sm text-gray-600">Unterstützte Formate: PDF, XLS, XLSX</p>
+            <p class="mb-2 text-sm text-gray-600">Unterstützte Formate: PDF, XLS, XLSX, JSON</p>
             <div 
               class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors duration-200"
               @click="simulateFileUpload"
@@ -225,10 +220,11 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          <div class="flex justify-center sm:justify-end">
+          <div class="flex justify-between sm:justify-end">
+            <!-- <JsonImportButton /> -->
             <button 
-              class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              :disabled="!uploadedFile || isProcessing"
+              class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ml-2"
+              :disabled="isProcessing" 
               @click="processFile"
             >
               <span v-if="!isProcessing">Bilanz verarbeiten</span>
@@ -377,67 +373,52 @@ onMounted(() => {
   <!-- Identifier Input Dialog -->
   <div v-if="showIdentifierDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 w-96">
-      <h3 class="text-lg font-semibold mb-4">Identifikationsnummer eingeben</h3>
+      <h3 class="text-lg font-medium mb-4">Identifikationsdaten eingeben</h3>
       
-      <div class="mb-4">
-        <div class="flex space-x-4 mb-2">
-          <button 
-            @click="isPersonalNumber = true"
-            :class="[
-              'px-4 py-2 rounded-lg',
-              isPersonalNumber ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-            ]"
-          >
-            Personennummer
-          </button>
-          <button 
-            @click="isPersonalNumber = false"
-            :class="[
-              'px-4 py-2 rounded-lg',
-              !isPersonalNumber ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-            ]"
-          >
-            Einheitennummer
-          </button>
-        </div>
-        
-        <!-- Personennummer Input -->
-        <div v-if="isPersonalNumber">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Personennummer
-          </label>
+      <!-- Input Fields -->
+      <div class="space-y-4 mt-4">
+        <div>
+          <label for="personal-number" class="block text-sm font-medium text-gray-700 mb-1">Personennummer <span class="text-red-500">*</span></label>
           <input 
+            id="personal-number"
             type="text" 
-            v-model="activeNumber"
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :placeholder="isPersonalNumber ? 'Personennummer eingeben' : 'Einheitennummer eingeben'"
+            v-model="personalNumber"
+            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Personennummer eingeben"
             maxlength="10"
             @keyup.enter="handleIdentifierSubmit"
           />
         </div>
-        
-        <!-- Einheitennummer Input -->
-        <div v-else>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Einheitennummer
-          </label>
+        <div>
+          <label for="unit-number" class="block text-sm font-medium text-gray-700 mb-1">Einheitennummer (Optional)</label>
           <input 
+            id="unit-number"
             type="text" 
-            v-model="activeNumber"
-            class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :placeholder="isPersonalNumber ? 'Personennummer eingeben' : 'Einheitennummer eingeben'"
+            v-model="unitNumber"
+            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Einheitennummer eingeben"
             maxlength="10"
             @keyup.enter="handleIdentifierSubmit"
           />
         </div>
-        
-        <p class="text-sm text-gray-600 mt-1">
-          Bitte geben Sie eine {{ isPersonalNumber ? 'Personennummer' : 'Einheitennummer' }} ein.
-        </p>
-        <p v-if="identifierError" class="text-red-500 text-sm mt-1">{{ identifierError }}</p>
+        <div>
+          <label for="business-sector" class="block text-sm font-medium text-gray-700 mb-1">Wirtschaftszweig <span class="text-red-500">*</span></label>
+          <input 
+            id="business-sector"
+            type="text" 
+            v-model="businessSector"
+            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Wirtschaftszweig eingeben"
+            maxlength="50" 
+            @keyup.enter="handleIdentifierSubmit"
+          />
+        </div>
       </div>
       
-      <div class="flex justify-end space-x-2">
+      <p v-if="identifierError" class="text-red-500 text-sm mt-2">{{ identifierError }}</p>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end space-x-2 mt-6">
         <button
           @click="closeIdentifierDialog"
           class="px-4 py-2 text-gray-600 hover:text-gray-800"
@@ -446,8 +427,8 @@ onMounted(() => {
         </button>
         <button
           @click="handleIdentifierSubmit"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-          :disabled="!(isPersonalNumber ? personalNumber : unitNumber)"
+          class="px-4 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!personalNumber || !businessSector" 
         >
           Bestätigen
         </button>

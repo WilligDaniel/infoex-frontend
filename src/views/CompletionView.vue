@@ -2,12 +2,15 @@
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useDocumentStore } from '@/stores/document.js';
+import { useBilanzenStore } from '@/stores/bilanzen.js';
 
 const router = useRouter();
 const route = useRoute();
 const documentStore = useDocumentStore();
+const bilanzenStore = useBilanzenStore();
 
 const customerName = ref('');
+const steuerberaterName = ref('');
 const documentId = ref(route.params.id);
 const completionDate = ref(new Date().toLocaleDateString('de-DE'));
 const showNumberDialog = ref(false);
@@ -34,6 +37,11 @@ const inactiveNumber = computed({
   get: () => isPersonalNumber.value ? unitNumber.value : personalNumber.value,
   set: () => {} // No-op since this field is disabled
 });
+
+// --- Computed properties for displaying data from store ---
+const personennummerDisplay = computed(() => documentId.value || 'N/A');
+const einheitennummerDisplay = computed(() => bilanzenStore.sessionData?.Einheitennummer || 'N/A');
+const wirtschaftszweigDisplay = computed(() => bilanzenStore.sessionData?.Branche || 'N/A');
 
 const downloadXLS = () => {
   // Show number input dialog first
@@ -158,11 +166,47 @@ const closeIdentifierDialog = () => {
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-1">
-          Identifikationsnummer
+          Steuerberater
         </label>
         <input 
           type="text" 
-          :value="documentId"
+          v-model="steuerberaterName"
+          class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          placeholder="Name des Steuerberaters eingeben"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Personennummer
+        </label>
+        <input 
+          type="text" 
+          :value="personennummerDisplay"
+          disabled
+          class="w-full p-2 bg-gray-100 border rounded"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Einheitennummer
+        </label>
+        <input 
+          type="text" 
+          :value="einheitennummerDisplay"
+          disabled
+          class="w-full p-2 bg-gray-100 border rounded"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Wirtschaftszweig
+        </label>
+        <input 
+          type="text" 
+          :value="wirtschaftszweigDisplay"
           disabled
           class="w-full p-2 bg-gray-100 border rounded"
         />
